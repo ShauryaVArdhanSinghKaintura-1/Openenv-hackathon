@@ -1,0 +1,11 @@
+__pycache__
+*.pyc
+*.pyo
+.git
+.env
+*.egg-info
+dist
+build
+uv.lock
+test_e2e.py
+.gemini
