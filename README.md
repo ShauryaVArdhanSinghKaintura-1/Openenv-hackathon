@@ -14,7 +14,7 @@ tags:
 A **multi-step investigation MDP** where an LLM agent acts as a Trust & Safety moderator on a music streaming platform. The agent uses investigation tools to progressively reveal hidden case data, navigates adversarial traps, and makes a final moderation decision scored deterministically.
 
 > Built for the **OpenEnv Hackathon 2025**.
-> **Live Demo:** [https://huggingface.co/spaces/<YOUR_USERNAME>/music-content-moderation](https://huggingface.co/spaces/<YOUR_USERNAME>/music-content-moderation)
+> **Live Demo:** [https://huggingface.co/spaces/tender-twig/OpenEnv-hackathon](https://huggingface.co/spaces/tender-twig/OpenEnv-hackathon)
 
 ---
 
