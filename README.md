@@ -212,12 +212,12 @@ Baseline scores using `Qwen/Qwen2.5-72B-Instruct` via HF Router (2 episodes per 
 
 | Task | Avg Score | Description |
 |------|-----------|-------------|
-| task1 (Indie Artist) | 0.XXX | Easy — APPROVE |
-| task2 (Royalty Farm) | 0.XXX | Easy — REMOVE |
-| task3 (Bot + Injection) | 0.XXX | Medium — REMOVE |
-| task4 (Emotional Trap) | 0.XXX | Hard — REMOVE |
-| task5 (Anomalous Genuine) | 0.XXX | Hard — ESCALATE |
-| **Overall** | **0.XXX** | |
+| task1 (Indie Artist) | 0.900 | Easy — APPROVE |
+| task2 (Royalty Farm) | 0.900 | Easy — REMOVE |
+| task3 (Bot + Injection) | 0.900 | Medium — REMOVE |
+| task4 (Emotional Trap) | 0.900 | Hard — REMOVE |
+| task5 (Anomalous Genuine) | 0.350 | Hard — ESCALATE |
+| **Overall** | **0.790** | |
 
 ---
 
