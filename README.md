@@ -1,3 +1,14 @@
+---
+title: Music Content Moderation
+emoji: 🎵
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+app_port: 7860
+tags:
+  - openenv
+---
+
 # Music Content Moderation — OpenEnv RL Environment
 
 A **multi-step investigation MDP** where an LLM agent acts as a Trust & Safety moderator on a music streaming platform. The agent uses investigation tools to progressively reveal hidden case data, navigates adversarial traps, and makes a final moderation decision scored deterministically.
