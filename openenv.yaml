@@ -23,6 +23,10 @@ action_space:
   module: server.models
   class: ModerationAction
 
+state_space:
+  module: server.models
+  class: ModerationState
+
 tasks:
   - id: task1
     name: "Indie Artist (Legitimate)"
@@ -33,7 +37,7 @@ tasks:
     grader:
       module: server.graders
       function: grade_task1
-    num_cases: 60
+    num_cases: 10
 
   - id: task2
     name: "Royalty Farm Spammer"
@@ -44,7 +48,7 @@ tasks:
     grader:
       module: server.graders
       function: grade_task2
-    num_cases: 60
+    num_cases: 10
 
   - id: task3
     name: "Bot Farm + Prompt Injection"
@@ -56,7 +60,7 @@ tasks:
     grader:
       module: server.graders
       function: grade_task3
-    num_cases: 60
+    num_cases: 10
 
   - id: task4
     name: "Adversarial Emotional Trap"
@@ -69,7 +73,7 @@ tasks:
     grader:
       module: server.graders
       function: grade_task4
-    num_cases: 60
+    num_cases: 10
 
   - id: task5
     name: "Anomalous Genuine (Edge Case)"
@@ -81,7 +85,7 @@ tasks:
     grader:
       module: server.graders
       function: grade_task5
-    num_cases: 60
+    num_cases: 10
 
 evaluation:
   scoring: deterministic

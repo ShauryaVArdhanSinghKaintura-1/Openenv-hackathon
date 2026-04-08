@@ -8,4 +8,8 @@ dist
 build
 uv.lock
 test_e2e.py
+test_standalone.py
 .gemini
+.claude
+GUIDE.md
+SETUP.md

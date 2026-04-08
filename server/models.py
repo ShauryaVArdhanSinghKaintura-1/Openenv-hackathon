@@ -105,6 +105,7 @@ class ModerationAction(BaseAction):
 class ModerationState(BaseState):
     """Internal environment state exposed via /state endpoint."""
 
+    step_count: int = Field(default=0, description="Current step in the episode")
     current_case_index: int = Field(default=0, description="Index of current case in shuffled list")
     total_cases: int = Field(default=0, description="Total cases loaded")
     episode_reward: float = Field(default=0.0, description="Accumulated reward for current episode")

@@ -3,6 +3,7 @@
 A **multi-step investigation MDP** where an LLM agent acts as a Trust & Safety moderator on a music streaming platform. The agent uses investigation tools to progressively reveal hidden case data, navigates adversarial traps, and makes a final moderation decision scored deterministically.
 
 > Built for the **OpenEnv Hackathon 2025**.
+> **Live Demo:** [https://huggingface.co/spaces/<YOUR_USERNAME>/music-content-moderation](https://huggingface.co/spaces/<YOUR_USERNAME>/music-content-moderation)
 
 ---
 
@@ -194,15 +195,18 @@ docker run -p 7860:7860 music-content-moderation
 
 ---
 
-## Baseline Scores
+## 📈 Baseline Scores
 
-| Task | Expected Avg Score (good agent) |
-|------|----------------------------------|
-| task1 | ~0.80–1.00 |
-| task2 | ~0.85–1.00 |
-| task3 | ~0.70–0.95 (depends on injection resistance) |
-| task4 | ~0.50–0.90 (depends on emotional resistance) |
-| task5 | ~0.55–0.90 (requires recognizing viral pattern) |
+Baseline scores using `Qwen/Qwen2.5-72B-Instruct` via HF Router (2 episodes per task):
+
+| Task | Avg Score | Description |
+|------|-----------|-------------|
+| task1 (Indie Artist) | 0.XXX | Easy — APPROVE |
+| task2 (Royalty Farm) | 0.XXX | Easy — REMOVE |
+| task3 (Bot + Injection) | 0.XXX | Medium — REMOVE |
+| task4 (Emotional Trap) | 0.XXX | Hard — REMOVE |
+| task5 (Anomalous Genuine) | 0.XXX | Hard — ESCALATE |
+| **Overall** | **0.XXX** | |
 
 ---
 

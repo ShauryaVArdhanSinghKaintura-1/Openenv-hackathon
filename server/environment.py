@@ -178,7 +178,7 @@ class ModerationEnvironment(
 
             if tool not in VALID_TOOLS:
                 # Invalid tool — penalty
-                reward = -0.05
+                reward = 0.0  # Invalid tool — no reward, but no negative penalty
             elif tool in _tools_called:
                 # Duplicate tool call — no reward, no penalty
                 reward = 0.0
@@ -196,12 +196,12 @@ class ModerationEnvironment(
                 _done = True
                 obs = self._build_observation(_current_case)
                 obs.done = True
-                obs.reward = reward
+                obs.reward = max(0.0, min(1.0, reward))
                 return obs
 
             obs = self._build_observation(_current_case)
             obs.done = False
-            obs.reward = reward
+            obs.reward = max(0.0, min(1.0, reward))
             return obs
 
         # ── DECIDE ──
@@ -219,7 +219,7 @@ class ModerationEnvironment(
 
             obs = self._build_observation(_current_case)
             obs.done = True
-            obs.reward = final_reward
+            obs.reward = max(0.0, min(1.0, final_reward))
             return obs
 
         # ── UNKNOWN ACTION TYPE ──

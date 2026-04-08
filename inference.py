@@ -212,7 +212,7 @@ def run_episode(task_id: str) -> tuple[bool, int, float, list[float]]:
             break
 
         observation = obs
-        time.sleep(8)  # stay under 8 req/min free tier limit
+        time.sleep(1)  # Small delay between steps; HF router handles rate limits
 
     else:
         # Ran out of steps
@@ -231,7 +231,26 @@ def run_episode(task_id: str) -> tuple[bool, int, float, list[float]]:
 # ── Main ─────────────────────────────────────────────────────────────────────
 
 
+def wait_for_server(url: str, timeout: int = 60) -> None:
+    """Wait for the environment server to be ready."""
+    import time as _time
+    start = _time.time()
+    while _time.time() - start < timeout:
+        try:
+            resp = requests.get(f"{url}/health", timeout=5)
+            if resp.status_code == 200:
+                return
+        except requests.ConnectionError:
+            pass
+        _time.sleep(2)
+    print(f"[ERROR] Server at {url} not reachable after {timeout}s. "
+          f"Start it first: uvicorn server.app:app --host 0.0.0.0 --port 7860",
+          file=sys.stderr)
+    sys.exit(1)
+
+
 def main() -> None:
+    wait_for_server(ENV_URL)
     task_ids = ["task1", "task2", "task3", "task4", "task5"]
     episodes_per_task = 2  # 10 total episodes = fast runtime
 
