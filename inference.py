@@ -23,16 +23,16 @@ from openai import OpenAI
 # ── Configuration ────────────────────────────────────────────────────────────
 
 API_BASE_URL = os.getenv("API_BASE_URL", "https://router.huggingface.co/v1")
-API_KEY = os.getenv("HF_TOKEN") or os.getenv("API_KEY") or os.getenv("OPENAI_API_KEY", "")
+HF_TOKEN = os.getenv("HF_TOKEN")
 MODEL_NAME = os.getenv("MODEL_NAME", "Qwen/Qwen2.5-72B-Instruct")
 ENV_URL = os.getenv("ENV_URL", "http://localhost:7860")
 ENV_NAME = "music-content-moderation"
 
-if not API_KEY:
-    print("[ERROR] No API key found. Set HF_TOKEN, API_KEY, or OPENAI_API_KEY.", file=sys.stderr)
+if not HF_TOKEN:
+    print("[ERROR] No HF_TOKEN found. Set it in your environment.", file=sys.stderr)
     sys.exit(1)
 
-client = OpenAI(base_url=API_BASE_URL, api_key=API_KEY)
+client = OpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN)
 
 # ── System Prompt ────────────────────────────────────────────────────────────
 

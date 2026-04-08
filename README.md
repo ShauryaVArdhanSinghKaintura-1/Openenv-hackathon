@@ -21,6 +21,33 @@ The environment operates entirely through fog-of-war mechanics. When an episode 
 
 To uncover these clues, the agent must perform an `INVESTIGATE` action by calling specific internal tools such as `FETCH_METRICS` or `FETCH_ACCOUNT_HISTORY`. Each successful tool call rewards the agent with intermediate points and reveals new slices of the telemetry. Once the agent feels confident in the evidence gathered, they transition to the `DECIDE` phase. They are required to submit their final moderation verdict (APPROVE, REMOVE, ESCALATE, or RESTORE) alongside the exact data signals they are citing as their justification. The episode is strictly capped at eight maximum steps.
 
+## Technical Specifications
+
+### Observation Space
+The environment uses a `ModerationObservation` schema. Fields are initially `null` and revealed via specific tools:
+
+| Field | Description | Revealed By |
+|-------|-------------|-------------|
+| `track_id` | Case identifier | Always Visible |
+| `track_title` | Track name/metadata | Always Visible |
+| `duration_ms` | Track length | FETCH_METRICS |
+| `uploads_last_7d` | User upload frequency | FETCH_METRICS |
+| `streams_first_24h` | Early streaming counts | FETCH_METRICS |
+| `stream_source_direct_pct` | % of direct traffic | FETCH_METRICS |
+| `account_age_days` | User account age | FETCH_ACCOUNT_HISTORY |
+| `is_verified` | Verified artist status | FETCH_ACCOUNT_HISTORY |
+| `prior_strikes` | Past policy violations | FETCH_ACCOUNT_HISTORY |
+| `algorithmic_playlist_pct` | % from official playlists | FETCH_ACCOUNT_HISTORY |
+| `user_appeal_text` | Text from user appeal | FETCH_APPEAL |
+| `marketing_campaign_active` | Paid campaign status | FETCH_MARKETING_DATA |
+
+### Action Space
+The agent submits a `ModerationAction` JSON object:
+*   **Action Types**: `INVESTIGATE` or `DECIDE`
+*   **Investigate**: Requires `tool_name` (one of the 4 tools listed above).
+*   **Decide**: Requires `decision`, `cited_signals` (list of keys), and `justification_summary`.
+
+
 ## Evaluating AI Trust & Safety
 
 We built this environment to specifically target common weaknesses in modern conversational models. The most prominent challenges include prompt injection resistance and emotional manipulation. For example, some of the fabricated cases feature bot-farm data paired with emotionally charged appeal text meant to coax the agent into leniency. The agent is sternly instructed to make data-driven decisions; evaluating whether an agent caves to social engineering or safely mitigates risk is a core scoring mechanic. Furthermore, edge cases with organic viral activity force the agent to balance the line between penalizing fraud and escalating harmless viral spikes to human operators.
