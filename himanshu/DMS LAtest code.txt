@@ -2099,3 +2099,26 @@ function OrderWizardView() {
     </div>
   );
 }
+
+// --- COMPONENT: CalendarView ---
+function CalendarView({ userView }) {
+  return (
+    <div className="max-w-7xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="mb-8 flex justify-between items-end">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-800 tracking-tight">Calendar</h1>
+          <p className="text-slate-500 font-medium mt-1">Manage your schedule and beat plans.</p>
+        </div>
+        <button className="bg-[#1E293B] text-white px-5 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-black transition-colors shadow-sm">
+          <Plus size={16} /> Add Event
+        </button>
+      </div>
+
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center text-slate-500">
+        <CalendarDays size={48} className="mx-auto mb-4 text-slate-300" />
+        <h2 className="text-xl font-bold text-slate-700 mb-2">Calendar View</h2>
+        <p className="max-w-md mx-auto text-sm">Your schedule and appointments will appear here. Calendar synchronization features are currently being rolled out.</p>
+      </div>
+    </div>
+  );
+}
