@@ -1,0 +1,2101 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  LayoutDashboard, 
+  Users, 
+  ShoppingCart, 
+  KanbanSquare, 
+  Calendar as CalendarIcon, 
+  Bell, 
+  Plus, 
+  Search, 
+  MapPin, 
+  Clock, 
+  CheckCircle, 
+  AlertCircle,
+  Play,
+  Square,
+  ChevronDown,
+  Star,
+  TrendingUp,
+  Package,
+  GripVertical,
+  Loader2,
+  UserCircle,
+  Briefcase,
+  X,
+  CreditCard,
+  Activity,
+  MessageSquare,
+  Building,
+  ChevronRight,
+  FileText,
+  Box,
+  Phone,
+  Hash,
+  Award,
+  CalendarCheck,
+  ArrowRight,
+  ArrowLeft,
+  Trash2,
+  Truck,
+  Filter,
+  Eye,
+  AlertTriangle,
+  CheckCircle2,
+  ChevronLeft,
+  CalendarDays,
+  Map,
+  BarChart3,
+  Users2,
+  ClipboardCheck,
+  Target,
+  ArrowRightLeft,
+  Zap
+} from 'lucide-react';
+
+// --- MOCK DATA ---
+const MOCK_USER = {
+  name: "Atul Yadav",
+  role: "Sales Executive (SE)",
+  territory: "North Region"
+};
+
+const MOCK_TEAM = [
+  { id: 'se1', name: 'Atul Yadav', territory: 'Delhi NCR', sales: 2800000, target: 3000000, timeLogged: 24500, conversion: 25, status: 'Online', activeTasks: 5 },
+  { id: 'se2', name: 'Rajesh Kumar', territory: 'Haryana Zone', sales: 1500000, target: 2000000, timeLogged: 18000, conversion: 18, status: 'Offline', activeTasks: 2 },
+  { id: 'se3', name: 'Suresh Singh', territory: 'Punjab Area', sales: 900000, target: 1500000, timeLogged: 12000, conversion: 10, status: 'Online', activeTasks: 8 }
+];
+
+const MOCK_APPROVALS = [
+  { id: 'app1', seName: 'Rajesh Kumar', date: 'April 15, 2026', status: 'Pending', type: 'Daily Beat Plan', entities: 4 },
+  { id: 'app2', seName: 'Suresh Singh', date: 'April 18, 2026', status: 'Pending', type: 'Daily Beat Plan', entities: 3 }
+];
+
+const MOCK_TASKS = [
+  { id: 1, title: "Visit Dealer A", type: "Counter Time", entity: "Sharma Builders", status: "pending", timeLogged: 5, isActive: false },
+  { id: 2, title: "Product Demo", type: "Site Visit Time", entity: "Apex Constructions", status: "pending", timeLogged: 0, isActive: false },
+  { id: 3, title: "Follow up on Order #1023", type: "Travel Time", entity: "City Distributors", status: "completed", timeLogged: 2400, isActive: false }
+];
+
+const MOCK_RH_TASKS = [
+  { id: 101, title: "Review Delhi Territories", type: "Admin", entity: "Internal", status: "pending", timeLogged: 0, isActive: false },
+  { id: 102, title: "Call Key Accounts", type: "Sales", entity: "Sharma Builders", status: "completed", timeLogged: 3600, isActive: false }
+];
+
+const MOCK_LEADS = [
+  { id: 101, title: "wrong address", location: "ABH-Chhatti...", tag: "HOT", column: "inbox", type: "Support", estimatedValue: 0, assignedSE: "Atul Yadav" },
+  { id: 102, title: "New Project Quote", location: "Sector 42", tag: "Sales", column: "warm", type: "Sales", estimatedValue: 850000, assignedSE: "Rajesh Kumar" },
+  { id: 103, title: "Material Testing Req", location: "Site B", tag: "HOT", column: "hot", type: "Support", estimatedValue: 0, assignedSE: "Suresh Singh" },
+  { id: 104, title: "Referral from Dealer", location: "Main Market", tag: "Warm", column: "inbox", type: "Sales", estimatedValue: 150000, assignedSE: "Atul Yadav" }
+];
+
+const MOCK_DEALERS = [
+  { 
+    id: 1, name: "Sharma Builders", region: "Delhi NCR", city: "Delhi", type: "Dealer", isAuthorized: true, isExclusive: true, tier: "Top", ytdRevenue: 2800000, target: 3000000, activeOrders: 2,
+    legalId: "GST07AAAAA0000A1Z5", address: "42 Building Sector, Delhi", hierarchy: { se: "Atul Yadav", asm: "Rajesh Kumar", rsm: "Amit Singh" }, primaryDistributor: "City Distributors", onboardedDate: "2023-01-15", liveDays: 1200, creditScore: 780, totalRevenue: 8500000, billLots: 42,
+    inventory: [{ sku: "Cement Grade A", qty: 450 }, { sku: "Steel TMT", qty: 120 }], lastInventoryUpdate: "2026-04-29",
+    complaints: [{ id: "C-1", text: "Late delivery on order #1002", status: "Resolved", satisfaction: 80 }], sitesProvided: 12, leadConversion: 25, linkedInfluencers: ["Ramesh Kumar"], persona: "High volume buyer. Aggressive negotiator. Prefers WhatsApp communication."
+  },
+  { 
+    id: 2, name: "Apex Constructions", region: "Haryana Zone", city: "Gurgaon", type: "Distributor", isAuthorized: true, isExclusive: false, tier: "Active", ytdRevenue: 1400000, target: 1500000, activeOrders: 0,
+    legalId: "GST06BBBBB0000B1Z5", address: "Sector 14, Gurgaon", hierarchy: { se: "Rajesh Kumar", asm: "Amit Singh", rsm: "N/A" }, primaryDistributor: "Direct", onboardedDate: "2024-05-10", liveDays: 720, creditScore: 650, totalRevenue: 3000000, billLots: 15,
+    inventory: [], lastInventoryUpdate: null,
+    complaints: [], sitesProvided: 5, leadConversion: 40, linkedInfluencers: ["Singh Contractors"], persona: "Focuses on premium products. Needs constant technical support."
+  },
+  { 
+    id: 3, name: "BuildWell Materials", region: "Delhi NCR", city: "Noida", type: "Dealer", isAuthorized: false, isExclusive: false, tier: "Non-Active", ytdRevenue: 400000, target: 1000000, activeOrders: 0,
+    legalId: "Pending", address: "Plot 22, Ind Area, Noida", hierarchy: { se: "Suresh Singh", asm: "Rajesh Kumar", rsm: "Amit Singh" }, primaryDistributor: "Apex Constructions", onboardedDate: "2025-11-20", liveDays: 160, creditScore: 0, totalRevenue: 400000, billLots: 2,
+    inventory: [], lastInventoryUpdate: null,
+    complaints: [], sitesProvided: 0, leadConversion: 0, linkedInfluencers: [], persona: "New prospect. Has credit issues, proceed with caution."
+  },
+  { 
+    id: 4, name: "Orion Traders", region: "Haryana Zone", city: "Faridabad", type: "Dealer", isAuthorized: true, isExclusive: false, tier: "Active", ytdRevenue: 900000, target: 1200000, activeOrders: 1,
+    legalId: "GST08CCCCC0000C1Z5", address: "Phase 1, Industrial Area, Faridabad", hierarchy: { se: "Atul Yadav", asm: "Rajesh Kumar", rsm: "Amit Singh" }, primaryDistributor: null, onboardedDate: "2025-01-05", liveDays: 480, creditScore: 610, totalRevenue: 1500000, billLots: 8,
+    inventory: [{ sku: "Cement Grade A", qty: 100 }], lastInventoryUpdate: "2026-04-25",
+    complaints: [], sitesProvided: 2, leadConversion: 10, linkedInfluencers: [], persona: "Reliable, but lacks a mapped distributor for direct routing."
+  }
+];
+
+const MOCK_INFLUENCERS = [
+  { id: 101, name: "Ramesh Kumar", category: "Architect", region: "Delhi NCR", city: "Delhi", linkedDealer: "Sharma Builders", linkedDealerId: "GST07AAAAA0000A1Z5", mappedSE: "Atul Yadav", phoneNumber: "+91 9876543210", ccrlNumber: "CCRL-ARCH-101", lastActivityDate: "2026-04-10", totalSitesGiven: 45, conversionRate: 15, revenue: 550000, rewardsAccrued: 12000, rewardsRedeemed: 10000 },
+  { id: 102, name: "Singh Contractors", category: "Contractor", region: "Haryana Zone", city: "Gurgaon", linkedDealer: "Apex Constructions", linkedDealerId: "GST06BBBBB0000B1Z5", mappedSE: "Rajesh Kumar", phoneNumber: "+91 8765432109", ccrlNumber: "CCRL-CONT-205", lastActivityDate: "2025-11-20", totalSitesGiven: 12, conversionRate: 0, revenue: 0, rewardsAccrued: 0, rewardsRedeemed: 0 },
+  { id: 103, name: "Elite Planners", category: "Architect", region: "Delhi NCR", city: "Noida", linkedDealer: "BuildWell Materials", linkedDealerId: "Pending", mappedSE: "Suresh Singh", phoneNumber: "+91 7654321098", ccrlNumber: "CCRL-ARCH-302", lastActivityDate: "2026-03-15", totalSitesGiven: 50, conversionRate: 22, revenue: 890000, rewardsAccrued: 25000, rewardsRedeemed: 5000 },
+  { id: 104, name: "Manoj Masons", category: "Mason", region: "Delhi NCR", city: "Delhi", linkedDealer: "Sharma Builders", linkedDealerId: "GST07AAAAA0000A1Z5", mappedSE: "Atul Yadav", phoneNumber: "+91 6543210987", ccrlNumber: "CCRL-MAS-404", lastActivityDate: "2026-04-28", totalSitesGiven: 8, conversionRate: 50, revenue: 120000, rewardsAccrued: 2000, rewardsRedeemed: 2000 },
+  { id: 105, name: "QuickFix Plumbing", category: "Plumber", region: "Haryana Zone", city: "Gurgaon", linkedDealer: "Apex Constructions", linkedDealerId: "GST06BBBBB0000B1Z5", mappedSE: "Rajesh Kumar", phoneNumber: "+91 5432109876", ccrlNumber: "CCRL-PLU-505", lastActivityDate: "2025-08-10", totalSitesGiven: 0, conversionRate: 0, revenue: 0, rewardsAccrued: 0, rewardsRedeemed: 0 },
+];
+
+const MOCK_PRODUCTS = [
+  { sku: "CEM-A-50", name: "Premium Cement Grade A (50kg)", price: 450 },
+  { sku: "CEM-B-50", name: "Standard Cement Grade B (50kg)", price: 380 },
+  { sku: "STL-TMT-12", name: "Steel TMT Bar 12mm (Bundle)", price: 6500 },
+  { sku: "WPF-AGT-05", name: "Waterproofing Agent 5L", price: 1200 },
+  { sku: "BLK-AER-01", name: "AAC Blocks (Pallet)", price: 3200 }
+];
+
+const MOCK_ORDERS = [
+  { 
+    id: "ORD-2026-9921", entityName: "Sharma Builders", date: "2026-04-29T10:00:00", value: 45000, status: "In Transit", 
+    items: [{ sku: "CEM-A-50", name: "Premium Cement Grade A", qty: 100, price: 450 }], 
+    history: { punched: "2026-04-29T10:00:00", processing: "2026-04-29T12:00:00", dispatched: "2026-04-30T09:00:00", transit: "2026-04-30T14:00:00" }, 
+    isDelayed: false 
+  },
+  { 
+    id: "ORD-2026-9810", entityName: "Apex Constructions", date: "2026-04-25T14:30:00", value: 130000, status: "Processing", 
+    items: [{ sku: "STL-TMT-12", name: "Steel TMT Bar 12mm", qty: 20, price: 6500 }], 
+    history: { punched: "2026-04-25T14:30:00", processing: "2026-04-26T10:00:00" }, 
+    isDelayed: true 
+  },
+  { 
+    id: "ORD-2026-9705", entityName: "BuildWell Materials", date: "2026-04-20T09:15:00", value: 320000, status: "Delivered", 
+    items: [{ sku: "BLK-AER-01", name: "AAC Blocks (Pallet)", qty: 100, price: 3200 }], 
+    history: { punched: "2026-04-20T09:15:00", processing: "2026-04-20T11:00:00", dispatched: "2026-04-21T08:00:00", transit: "2026-04-21T16:00:00", delivered: "2026-04-22T14:00:00" }, 
+    isDelayed: false 
+  },
+  { 
+    id: "ORD-2026-9950", entityName: "Sharma Builders", date: "2026-04-30T11:00:00", value: 19000, status: "Punched", 
+    items: [{ sku: "CEM-B-50", name: "Standard Cement Grade B", qty: 50, price: 380 }], 
+    history: { punched: "2026-04-30T11:00:00" }, 
+    isDelayed: false 
+  }
+];
+
+// --- UTILS ---
+const calculateInfluencerStatus = (lastActivityDate) => {
+  if (!lastActivityDate) return 'Dormant';
+  const lastActive = new Date(lastActivityDate);
+  const today = new Date('2026-04-30'); 
+  const diffTime = Math.abs(today - lastActive);
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+  return diffDays <= 90 ? 'Active' : 'Dormant';
+};
+
+const getCategoryColor = (category) => {
+  switch(category) {
+    case 'Architect': return 'bg-blue-50 text-blue-700 border-blue-200';
+    case 'Contractor': return 'bg-purple-50 text-purple-700 border-purple-200';
+    case 'Mason': return 'bg-orange-50 text-orange-700 border-orange-200';
+    case 'Plumber': return 'bg-slate-100 text-slate-700 border-slate-200';
+    default: return 'bg-gray-50 text-gray-700 border-gray-200';
+  }
+};
+
+const getInitials = (name) => {
+  return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+};
+
+const formatTimeStr = (totalSeconds) => {
+  const h = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
+  const m = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
+  const s = (totalSeconds % 60).toString().padStart(2, '0');
+  return `${h}:${m}:${s}`;
+};
+
+// --- MAIN APP COMPONENT ---
+export default function App() {
+  const [activeTab, setActiveTab] = useState('leads'); // Default to leads
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [userView, setUserView] = useState('RM SE View'); // RM SE View | RH View | DIRECTOR VIEW
+
+  return (
+    <div className="flex h-screen bg-[#E2E8F0] text-slate-800 font-sans overflow-hidden">
+      {/* SIDEBAR */}
+      <aside className={`${isSidebarOpen ? 'w-64' : 'w-20'} flex-shrink-0 bg-[#F1F5F9] border-r border-slate-300 transition-all duration-300 flex flex-col z-20`}>
+        <div className="h-16 flex items-center px-6 border-b border-slate-300">
+          <div className="flex items-center gap-2 font-bold text-xl tracking-tight text-slate-900">
+            <div className="w-8 h-8 bg-slate-800 rounded-full flex items-center justify-center text-white text-xs font-serif shadow-sm">
+              DMS
+            </div>
+            {isSidebarOpen && <span>Chiraag</span>}
+          </div>
+        </div>
+
+        <nav className="flex-1 overflow-y-auto py-6 custom-scrollbar">
+          <ul className="space-y-1.5 px-4">
+            <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard" active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} isOpen={isSidebarOpen} />
+            <SidebarItem icon={<Users size={18} />} label="Network Directory" active={activeTab === 'directory'} onClick={() => setActiveTab('directory')} isOpen={isSidebarOpen} />
+            <SidebarItem icon={<ShoppingCart size={18} />} label="Place Orders" active={activeTab === 'place_orders'} onClick={() => setActiveTab('place_orders')} isOpen={isSidebarOpen} />
+            <SidebarItem icon={<Truck size={18} />} label="Track Orders" active={activeTab === 'track_orders'} onClick={() => setActiveTab('track_orders')} isOpen={isSidebarOpen} />
+            <SidebarItem icon={<KanbanSquare size={18} />} label="Lead Manager" active={activeTab === 'leads'} onClick={() => setActiveTab('leads')} isOpen={isSidebarOpen} />
+            <SidebarItem icon={<CalendarIcon size={18} />} label="Calendar" active={activeTab === 'calendar'} onClick={() => setActiveTab('calendar')} isOpen={isSidebarOpen} />
+          </ul>
+        </nav>
+
+        <div className="border-t border-slate-300 bg-slate-50 flex flex-col flex-shrink-0">
+          <div className="p-4 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-slate-300 flex items-center justify-center font-bold text-slate-700 flex-shrink-0 shadow-inner border border-slate-400/20">
+              {MOCK_USER.name.split(' ').map(n => n[0]).join('')}
+            </div>
+            {isSidebarOpen && (
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-slate-900 truncate">{MOCK_USER.name}</p>
+                <p className="text-[10px] font-bold text-blue-600 uppercase tracking-wider truncate">{userView}</p>
+              </div>
+            )}
+          </div>
+          {isSidebarOpen && (
+            <div className="px-4 pb-4 animate-in fade-in duration-200">
+              <div className="relative">
+                <select 
+                  value={userView}
+                  onChange={(e) => setUserView(e.target.value)}
+                  className="w-full bg-white border border-slate-300 text-slate-700 text-xs font-bold rounded-lg pl-3 pr-8 py-2 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all cursor-pointer appearance-none shadow-sm"
+                >
+                  <option value="RM SE View">RM SE View</option>
+                  <option value="RH View">RH View</option>
+                  <option value="DIRECTOR VIEW">DIRECTOR VIEW</option>
+                </select>
+                <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+              </div>
+            </div>
+          )}
+        </div>
+      </aside>
+
+      {/* MAIN CONTENT AREA */}
+      <main className="flex-1 flex flex-col overflow-hidden relative z-10">
+        {/* HEADER */}
+        <header className="h-16 bg-[#F1F5F9] border-b border-slate-300 flex items-center justify-between px-6 flex-shrink-0">
+          <div className="flex items-center gap-4 flex-1">
+            <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 -ml-2 text-slate-500 hover:bg-slate-200 rounded-lg transition-colors">
+              <LayoutDashboard size={20} />
+            </button>
+            <div className="relative max-w-lg w-full hidden md:block">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+              <input 
+                type="text" 
+                placeholder="Search entities, orders, leads..." 
+                className="w-full pl-10 pr-4 py-2 bg-slate-200/60 border border-transparent rounded-md text-sm focus:bg-white focus:border-blue-400 transition-all outline-none text-slate-700 font-medium"
+              />
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <button className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors">
+              <Plus size={18} />
+            </button>
+            <button className="relative p-2 text-slate-500 hover:bg-slate-200 rounded-full transition-colors">
+              <Bell size={18} />
+              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border border-[#F1F5F9]"></span>
+            </button>
+          </div>
+        </header>
+
+        {/* DYNAMIC VIEWPORT */}
+        <div className="flex-1 overflow-auto bg-[#E2E8F0] p-6 lg:p-8 custom-scrollbar">
+          {activeTab === 'dashboard' && (userView === 'RH View' ? <RHDashboardView /> : <DashboardView />)}
+          {activeTab === 'leads' && <LeadManagerView userView={userView} />}
+          {activeTab === 'directory' && <NetworkDirectoryView userView={userView} />}
+          {activeTab === 'place_orders' && <OrderWizardView />}
+          {activeTab === 'track_orders' && <OrderTrackingView />}
+          {activeTab === 'calendar' && <CalendarView userView={userView} />}
+        </div>
+      </main>
+    </div>
+  );
+}
+
+// --- COMPONENT: SidebarItem ---
+function SidebarItem({ icon, label, active, onClick, isOpen }) {
+  return (
+    <li>
+      <button
+        onClick={onClick}
+        className={`w-full flex items-center gap-3 px-3 py-2 rounded-md transition-colors text-sm font-semibold ${
+          active 
+            ? 'bg-blue-100/60 text-blue-700' 
+            : 'text-slate-600 hover:bg-slate-200/50 hover:text-slate-900'
+        }`}
+      >
+        <span className={`${active ? 'text-blue-700' : 'text-slate-400'}`}>
+          {icon}
+        </span>
+        {isOpen && <span>{label}</span>}
+      </button>
+    </li>
+  );
+}
+
+// --- COMPONENT: DashboardView (SE) ---
+function DashboardView() {
+  const [tasks, setTasks] = useState(MOCK_TASKS);
+  
+  const fomoDealers = [...MOCK_DEALERS]
+    .map(d => ({ ...d, delta: d.target - d.ytdRevenue }))
+    .sort((a, b) => a.delta - b.delta)
+    .slice(0, 3);
+
+  const urgentLeads = MOCK_LEADS.filter(l => l.tag === 'HOT' || l.type === 'Support');
+
+  const toggleTimer = (taskId) => {
+    setTasks(prev => prev.map(task => {
+      if (task.id !== taskId && !task.isActive && tasks.some(t => t.isActive)) return task; 
+      if (task.id === taskId) return { ...task, isActive: !task.isActive };
+      return { ...task, isActive: false };
+    }));
+  };
+
+  const markComplete = (taskId) => {
+    setTasks(prev => prev.map(task => 
+      task.id === taskId ? { ...task, status: 'completed', isActive: false } : task
+    ));
+  };
+
+  return (
+    <div className="max-w-7xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-slate-800 tracking-tight">Dashboard</h1>
+        <p className="text-slate-500 font-medium mt-1">Welcome back, {MOCK_USER.name}. Here's your day at a glance.</p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="lg:col-span-7">
+          <div className="bg-[#F8FAFC] rounded-xl border border-slate-300/60 overflow-hidden shadow-sm">
+            <div className="px-6 py-5 flex justify-between items-center border-b border-slate-200">
+              <h2 className="text-lg font-bold text-slate-700 flex items-center gap-2">
+                <CheckCircle size={20} className="text-blue-500" />
+                Daily To-Do List
+              </h2>
+              <span className="text-xs font-semibold bg-slate-200/70 text-slate-600 px-3 py-1 rounded-full">
+                {tasks.filter(t => t.status === 'completed').length} / {tasks.length} Completed
+              </span>
+            </div>
+            <div className="p-4 space-y-3">
+              {tasks.map(task => (
+                <TaskCard 
+                  key={task.id} 
+                  task={task} 
+                  onToggle={() => toggleTimer(task.id)}
+                  onComplete={() => markComplete(task.id)}
+                  isAnyActive={tasks.some(t => t.isActive && t.id !== task.id)}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="lg:col-span-5 space-y-6">
+          <div className="bg-[#FDF8F6] rounded-xl border border-red-200 shadow-sm overflow-hidden">
+            <div className="px-6 py-4 flex items-center gap-2 border-b border-red-100">
+              <div className="w-3 h-3 rounded-full bg-red-500"></div>
+              <h2 className="text-[15px] font-bold text-red-900">Urgent Dealer Alerts</h2>
+            </div>
+            <div className="p-4 space-y-3">
+              {urgentLeads.map(lead => (
+                <div key={lead.id} className="p-4 bg-white border border-red-100 rounded-lg shadow-sm">
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="text-sm font-bold text-slate-800">{lead.title}</h3>
+                    <span className="text-[10px] font-bold bg-white text-red-600 border border-red-200 px-2 py-0.5 rounded shadow-sm">HOT</span>
+                  </div>
+                  <p className="text-xs text-slate-500 flex items-center gap-1.5 font-medium">
+                    <MapPin size={12} /> {lead.location}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-[#FAF5EF] rounded-xl border border-orange-200/60 shadow-sm overflow-hidden">
+             <div className="px-6 py-4 border-b border-orange-100/50">
+              <h2 className="text-[15px] font-bold text-amber-900 flex items-center gap-2">
+                <TrendingUp size={18} className="text-amber-500" />
+                Incentive Targets (FOMO)
+              </h2>
+            </div>
+            <div className="p-0">
+              {fomoDealers.map(dealer => (
+                <div key={dealer.id} className="p-5 border-b border-orange-100/30 last:border-0 flex justify-between items-center hover:bg-orange-50/30 transition-colors">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-800">{dealer.name}</h3>
+                    <p className="text-[11px] font-medium text-slate-500 mt-0.5">Target: ₹{(dealer.target/100000).toFixed(1)}L</p>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xs font-bold text-red-700 bg-red-100 px-2.5 py-1 rounded">
+                      ₹{(dealer.delta/1000).toFixed(0)}k away
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// --- COMPONENT: RHDashboardView ---
+function RHDashboardView() {
+  const [rhTasks, setRhTasks] = useState(MOCK_RH_TASKS);
+
+  const toggleTimer = (taskId) => {
+    setRhTasks(prev => prev.map(task => {
+      if (task.id !== taskId && !task.isActive && rhTasks.some(t => t.isActive)) return task; 
+      if (task.id === taskId) return { ...task, isActive: !task.isActive };
+      return { ...task, isActive: false };
+    }));
+  };
+
+  const markComplete = (taskId) => {
+    setRhTasks(prev => prev.map(task => 
+      task.id === taskId ? { ...task, status: 'completed', isActive: false } : task
+    ));
+  };
+
+  return (
+    <div className="max-w-7xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-slate-800 tracking-tight">RH Command Center</h1>
+        <p className="text-slate-500 font-medium mt-1">North Region Overview. Track performance, efficiency, and approvals.</p>
+      </div>
+
+      <div className="grid grid-cols-3 gap-6 mb-8">
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+           <div className="flex justify-between items-start mb-2">
+             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Sales vs Target</span>
+             <BarChart3 className="text-blue-500 opacity-80" size={20} />
+           </div>
+           <div>
+             <div className="text-3xl font-black text-slate-900 tracking-tight">₹52.0L</div>
+             <p className="text-xs font-bold text-emerald-600 mt-1">79% of ₹65L Target</p>
+           </div>
+        </div>
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+           <div className="flex justify-between items-start mb-2">
+             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Active Regional Orders</span>
+             <Package className="text-orange-500 opacity-80" size={20} />
+           </div>
+           <div>
+             <div className="text-3xl font-black text-slate-900 tracking-tight">14</div>
+             <p className="text-xs font-bold text-orange-600 mt-1">2 Flagged for Delay</p>
+           </div>
+        </div>
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+           <div className="flex justify-between items-start mb-2">
+             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Avg Lead Conversion</span>
+             <Target className="text-indigo-500 opacity-80" size={20} />
+           </div>
+           <div>
+             <div className="text-3xl font-black text-slate-900 tracking-tight">17.6%</div>
+             <p className="text-xs font-bold text-slate-500 mt-1">+2.1% from last month</p>
+           </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="lg:col-span-7 space-y-6">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+             <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                  <Users2 size={20} className="text-indigo-500" />
+                  Team Efficiency Matrix
+                </h2>
+             </div>
+             <div className="p-0 overflow-x-auto">
+               <table className="w-full text-sm text-left">
+                  <thead className="bg-slate-50 text-[10px] uppercase font-bold text-slate-500 tracking-wider">
+                    <tr>
+                      <th className="px-6 py-3 border-b border-slate-200">SE Name</th>
+                      <th className="px-6 py-3 border-b border-slate-200">Status</th>
+                      <th className="px-6 py-3 border-b border-slate-200 text-right">Hrs Logged</th>
+                      <th className="px-6 py-3 border-b border-slate-200 text-right">Sales MTD</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {MOCK_TEAM.map(se => (
+                      <tr key={se.id} className="hover:bg-slate-50/80 transition-colors">
+                        <td className="px-6 py-4 font-bold text-slate-800">{se.name}</td>
+                        <td className="px-6 py-4">
+                          <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${se.status === 'Online' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500 border border-slate-200'}`}>
+                            {se.status === 'Online' && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>}
+                            {se.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right font-mono text-slate-600 font-medium">
+                          {(se.timeLogged / 3600).toFixed(1)}h
+                        </td>
+                        <td className="px-6 py-4 text-right font-bold text-slate-900">
+                          ₹{(se.sales/100000).toFixed(1)}L
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+               </table>
+             </div>
+          </div>
+        </div>
+
+        <div className="lg:col-span-5 space-y-6">
+          <div className="bg-amber-50/40 rounded-2xl border border-amber-200/60 shadow-sm overflow-hidden">
+             <div className="px-6 py-4 border-b border-amber-100/50">
+              <h2 className="text-[15px] font-bold text-amber-900 flex items-center gap-2">
+                <ClipboardCheck size={18} className="text-amber-600" />
+                Pending Approvals ({MOCK_APPROVALS.length})
+              </h2>
+            </div>
+            <div className="p-4 space-y-3">
+              {MOCK_APPROVALS.map(app => (
+                <div key={app.id} className="bg-white p-4 rounded-xl border border-amber-100 shadow-sm flex flex-col gap-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-800">{app.seName}</h3>
+                      <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{app.type} • {app.date}</p>
+                    </div>
+                    <span className="text-[10px] font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded shadow-sm">Review Required</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <button className="flex-1 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded text-xs font-bold transition-colors">Approve</button>
+                    <button className="flex-1 py-1.5 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 rounded text-xs font-bold transition-colors">View Plan</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-[#F8FAFC] rounded-2xl border border-slate-300/60 shadow-sm overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-200 bg-slate-50/50 flex justify-between items-center">
+              <h2 className="text-[15px] font-bold text-slate-800 flex items-center gap-2">
+                <CheckCircle size={18} className="text-slate-500" />
+                My Tasks
+              </h2>
+              <button className="text-blue-600 hover:bg-blue-50 p-1 rounded transition-colors"><Plus size={16}/></button>
+            </div>
+            <div className="p-4 space-y-3">
+              {rhTasks.map(task => (
+                <TaskCard 
+                  key={task.id} 
+                  task={task} 
+                  onToggle={() => toggleTimer(task.id)}
+                  onComplete={() => markComplete(task.id)}
+                  isAnyActive={rhTasks.some(t => t.isActive && t.id !== task.id)}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// --- COMPONENT: TaskCard ---
+function TaskCard({ task, onToggle, onComplete, isAnyActive }) {
+  const [seconds, setSeconds] = useState(task.timeLogged);
+  const isCompleted = task.status === 'completed';
+
+  useEffect(() => {
+    let interval = null;
+    if (task.isActive) {
+      interval = setInterval(() => {
+        setSeconds(s => s + 1);
+      }, 1000);
+    } else if (!task.isActive && seconds !== 0) {
+      clearInterval(interval);
+    }
+    return () => clearInterval(interval);
+  }, [task.isActive, seconds]);
+
+  return (
+    <div className={`px-5 py-4 rounded-lg border transition-all duration-200 ${
+      isCompleted 
+        ? 'bg-slate-100 border-slate-200 opacity-70' 
+        : 'bg-[#F1F5F9] border-slate-300'
+    }`}>
+      <div className="flex items-center justify-between">
+        <div className="flex-1">
+          <div className="flex items-center gap-3 mb-1.5">
+            <h3 className={`text-[15px] font-bold ${isCompleted ? 'text-slate-400 line-through' : 'text-slate-800'}`}>
+              {task.title}
+            </h3>
+            <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-slate-200/70 text-slate-600 font-semibold tracking-wide">
+              {task.type}
+            </span>
+          </div>
+          <p className="text-xs text-slate-500 flex items-center gap-1.5 font-medium">
+            <MapPin size={12} className={isCompleted ? 'text-slate-400' : 'text-slate-400'}/> {task.entity}
+          </p>
+        </div>
+
+        <div className="flex items-center gap-5">
+          <div className={`font-mono text-lg tracking-wider ${isCompleted ? 'text-slate-400' : 'text-slate-500'}`}>
+            {formatTimeStr(seconds)}
+          </div>
+          
+          {!isCompleted ? (
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={onToggle}
+                disabled={!task.isActive && isAnyActive}
+                className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-bold transition-all shadow-sm ${
+                  task.isActive 
+                    ? 'bg-red-600 text-white hover:bg-red-700' 
+                    : isAnyActive 
+                      ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                      : 'bg-[#1E293B] text-white hover:bg-black'
+                }`}
+              >
+                {task.isActive ? <Square size={14} className="fill-current"/> : <Play size={14} className="fill-current"/>}
+                {task.isActive ? 'Punch Out' : 'Punch In'}
+              </button>
+              
+              {seconds > 0 && !task.isActive && (
+                <button onClick={onComplete} className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors" title="Mark Complete">
+                  <CheckCircle size={20} />
+                </button>
+              )}
+            </div>
+          ) : (
+            <span className="text-sm font-bold text-emerald-600 flex items-center gap-1.5">
+               <CheckCircle2 size={16} /> Done
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// --- COMPONENT: LeadManagerView ---
+const COLUMNS = [
+  { id: 'inbox', title: 'Inbox (New)', color: 'bg-[#F4F5F7]', dot: 'bg-slate-400', count: 0 },
+  { id: 'cold', title: 'Cold', color: 'bg-blue-50', dot: 'bg-blue-400', count: 0 },
+  { id: 'warm', title: 'Warm', color: 'bg-[#FEF3C7]', dot: 'bg-amber-400', count: 0 },
+  { id: 'hot', title: 'Hot', color: 'bg-orange-50', dot: 'bg-orange-500', count: 0 },
+  { id: 'closed', title: 'Closed', color: 'bg-[#D1FAE5]', dot: 'bg-emerald-500', count: 0 },
+];
+
+function LeadManagerView({ userView }) {
+  const [leads, setLeads] = useState(MOCK_LEADS);
+  const [draggedLeadId, setDraggedLeadId] = useState(null);
+  const isRH = userView === 'RH View';
+  
+  // Modal states
+  const [isAddLeadOpen, setIsAddLeadOpen] = useState(false);
+  const [pendingCloseLead, setPendingCloseLead] = useState(null); 
+  const [pendingTransferLead, setPendingTransferLead] = useState(null); 
+
+  const handleDragStart = (e, id) => {
+    setDraggedLeadId(id);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault(); 
+  };
+
+  const handleDrop = (e, columnId) => {
+    e.preventDefault();
+    if (!draggedLeadId) return;
+
+    if (columnId === 'closed') {
+       setPendingCloseLead(draggedLeadId);
+       return;
+    }
+
+    setLeads(prev => prev.map(lead => {
+      if (lead.id === draggedLeadId) {
+        if (columnId === 'inbox' && lead.column !== 'inbox') {
+          alert("Cannot move an active lead back to Inbox.");
+          return lead;
+        }
+        return { ...lead, column: columnId };
+      }
+      return lead;
+    }));
+    setDraggedLeadId(null);
+  };
+
+  const handleCloseLeadSubmit = (outcome) => {
+    setLeads(prev => prev.map(lead => 
+      lead.id === pendingCloseLead ? { ...lead, column: 'closed', outcome: outcome } : lead
+    ));
+    setPendingCloseLead(null);
+    setDraggedLeadId(null);
+  };
+
+  const handleAddLead = (newLead) => {
+    setLeads([...leads, { ...newLead, id: Date.now(), column: 'inbox', tag: newLead.category.includes('Sales') ? 'Sales' : 'Support' }]);
+    setIsAddLeadOpen(false);
+  };
+
+  const handleTransferLead = (newSE) => {
+    setLeads(prev => prev.map(lead => 
+      lead.id === pendingTransferLead.id ? { ...lead, assignedSE: newSE } : lead
+    ));
+    setPendingTransferLead(null);
+  };
+
+  const columnsWithCounts = COLUMNS.map(col => ({
+    ...col,
+    count: leads.filter(l => l.column === col.id).length
+  }));
+
+  return (
+    <div className="h-full flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500 relative">
+      
+      {isAddLeadOpen && <AddLeadModal isRH={isRH} onClose={() => setIsAddLeadOpen(false)} onSave={handleAddLead} />}
+      {pendingCloseLead && <CloseLeadModal onCancel={() => {setPendingCloseLead(null); setDraggedLeadId(null)}} onSave={handleCloseLeadSubmit} />}
+      {pendingTransferLead && <TransferLeadModal lead={pendingTransferLead} onClose={() => setPendingTransferLead(null)} onTransfer={handleTransferLead} />}
+
+      <div className="mb-6 flex justify-between items-end flex-shrink-0">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-800 tracking-tight">Lead Manager</h1>
+          <p className="text-slate-500 font-medium mt-1">Manage pipeline and dealer support requests.</p>
+        </div>
+        <button onClick={() => setIsAddLeadOpen(true)} className="bg-[#1E293B] text-white px-5 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-black transition-colors shadow-sm">
+          <Plus size={16} /> Quick Add Lead
+        </button>
+      </div>
+
+      <div className="flex-1 flex gap-5 overflow-x-auto pb-4 custom-scrollbar">
+        {columnsWithCounts.map(col => (
+          <div 
+            key={col.id} 
+            className={`flex-shrink-0 w-80 rounded-2xl flex flex-col ${col.color} border border-slate-200/50 shadow-sm transition-colors duration-200`}
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, col.id)}
+          >
+            <div className="p-5 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <span className={`w-2.5 h-2.5 rounded-full ${col.dot} shadow-sm`}></span>
+                <h3 className="font-bold text-slate-800 text-[15px]">{col.title}</h3>
+              </div>
+              <span className="text-xs font-bold text-slate-600 bg-white/80 px-2.5 py-1 rounded-md shadow-sm border border-slate-200/50">
+                {col.count}
+              </span>
+            </div>
+
+            <div className="flex-1 px-4 pb-4 space-y-3 overflow-y-auto custom-scrollbar">
+              {leads.filter(lead => lead.column === col.id).length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center text-slate-400 pb-10">
+                  <KanbanSquare size={32} className="mb-2 opacity-50" />
+                  <p className="text-sm font-bold">No tickets</p>
+                </div>
+              ) : (
+                leads.filter(lead => lead.column === col.id).map(lead => {
+                  const isHighValue = lead.estimatedValue > 500000;
+                  
+                  return (
+                    <div
+                      key={lead.id}
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, lead.id)}
+                      className={`bg-white p-4 rounded-xl shadow-sm border cursor-grab active:cursor-grabbing hover:shadow-md hover:border-blue-300 transition-all group relative ${lead.outcome === 'Won - Order Placed' || lead.outcome === 'Resolved (Support)' ? 'border-emerald-300' : lead.outcome ? 'border-red-300' : isHighValue && isRH ? 'border-amber-300 ring-1 ring-amber-100' : 'border-slate-200'}`}
+                    >
+                      {/* High Value Badge for RH */}
+                      {isHighValue && isRH && !lead.outcome && (
+                        <div className="absolute -top-2.5 -right-2.5">
+                          <span className="bg-red-500 text-white text-[9px] font-black tracking-wider px-2 py-0.5 rounded-full shadow border border-white flex items-center gap-1">
+                            <AlertCircle size={10}/> MANAGER ATTENTION
+                          </span>
+                        </div>
+                      )}
+
+                      <div className="flex justify-between items-start mb-2.5">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-2 h-2 rounded-full ${col.dot}`}></span>
+                          <h4 className="font-bold text-slate-900 text-[14px] leading-tight">{lead.title}</h4>
+                        </div>
+                        <button className="text-slate-300 hover:text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <GripVertical size={16} />
+                        </button>
+                      </div>
+                      
+                      <div className="flex items-center gap-2 text-xs text-slate-500 mb-3 font-medium">
+                        <MapPin size={12} className="text-slate-400 flex-shrink-0"/>
+                        <span className="truncate">{lead.location}</span>
+                      </div>
+
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md bg-slate-100 text-slate-600 border border-slate-200">
+                          {lead.tag}
+                        </span>
+                        {lead.type === 'Support' && <AlertCircle size={14} className="text-amber-500" title="Support Request" />}
+                      </div>
+
+                      {isRH && (
+                        <div className="pt-2 mt-2 border-t border-slate-100 flex justify-between items-center">
+                          <div className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1.5">
+                            <UserCircle size={12}/> {lead.assignedSE}
+                          </div>
+                          {!lead.outcome && (
+                            <button onClick={() => setPendingTransferLead(lead)} className="text-blue-600 hover:bg-blue-50 p-1 rounded transition-colors text-[10px] font-bold flex items-center gap-1" title="Reassign Lead">
+                              <ArrowRightLeft size={12}/> Transfer
+                            </button>
+                          )}
+                        </div>
+                      )}
+                      
+                      {lead.outcome && (
+                        <div className={`mt-2 pt-2 border-t border-slate-100 text-[10px] font-bold uppercase tracking-wider ${lead.outcome.includes('Won') || lead.outcome.includes('Resolved') ? 'text-emerald-600' : 'text-red-600'}`}>
+                          {lead.outcome}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TransferLeadModal({ lead, onClose, onTransfer }) {
+  const [selectedSE, setSelectedSE] = useState(lead.assignedSE);
+
+  return (
+    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center animate-in fade-in duration-200">
+      <div className="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
+        <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
+          <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2"><ArrowRightLeft size={18} className="text-blue-600"/> Transfer Lead</h2>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600"><X size={20}/></button>
+        </div>
+        <div className="p-6 space-y-4">
+          <div>
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Target Lead</p>
+            <p className="font-bold text-slate-900">{lead.title}</p>
+          </div>
+          <div>
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1.5">New Assignee <span className="text-red-500">*</span></label>
+            <select value={selectedSE} onChange={e => setSelectedSE(e.target.value)} className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:border-blue-500 outline-none font-bold text-slate-700">
+              <option value="" disabled>Select SE...</option>
+              {MOCK_TEAM.map(se => (
+                 <option key={se.id} value={se.name}>{se.name} ({se.activeTasks} active leads/tasks)</option>
+              ))}
+              <option value="Self-Assign">Self-Assign</option>
+            </select>
+          </div>
+        </div>
+        <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-3">
+            <button onClick={onClose} className="px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-200 rounded-lg">Cancel</button>
+            <button onClick={() => onTransfer(selectedSE)} disabled={!selectedSE || selectedSE === lead.assignedSE} className="px-5 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">Confirm Transfer</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AddLeadModal({ isRH, onClose, onSave }) {
+  const [formData, setFormData] = useState({
+    title: '',
+    contact: '',
+    category: 'Sales Opportunity',
+    subType: 'New Site',
+    linkedDealer: '',
+    assignToDealer: false,
+    
+    // RH Specific Additions
+    regionalCategory: 'Project',
+    leadTemperature: 'Warm',
+    assignee: MOCK_USER.name,
+    estimatedValue: 0
+  });
+
+  const salesSubTypes = ['New Site', 'Cross-Sell', 'Referral'];
+  const techSubTypes = ['Material Testing', 'Quality Validation', 'General Support'];
+  
+  const currentSubTypes = formData.category === 'Sales Opportunity' ? salesSubTypes : techSubTypes;
+
+  useEffect(() => {
+    setFormData(prev => ({ ...prev, subType: prev.category === 'Sales Opportunity' ? salesSubTypes[0] : techSubTypes[0] }));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.category]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!formData.title || !formData.contact || !formData.category || !formData.subType) return;
+    
+    const payload = {
+       ...formData,
+       location: 'Newly Added',
+       type: formData.category.includes('Sales') ? 'Sales' : 'Support',
+       assignedSE: isRH ? formData.assignee : MOCK_USER.name,
+       estimatedValue: isRH ? Number(formData.estimatedValue) : 0,
+       tag: isRH ? formData.leadTemperature : (formData.category.includes('Sales') ? 'Sales' : 'Support')
+    };
+
+    onSave(payload);
+  };
+
+  return (
+    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center animate-in fade-in duration-200">
+      <div className="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+        <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
+          <h2 className="text-lg font-bold text-slate-800">Quick Add Lead</h2>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600"><X size={20} /></button>
+        </div>
+        
+        <form onSubmit={handleSubmit} className="p-6 space-y-5 max-h-[80vh] overflow-y-auto custom-scrollbar">
+          <div className="grid grid-cols-2 gap-5">
+            <div className="col-span-2">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1.5">Lead / Project Name <span className="text-red-500">*</span></label>
+              <input type="text" required value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:border-blue-500 outline-none font-medium" placeholder="e.g. Apex Tower Phase 2" />
+            </div>
+            
+            <div className="col-span-2 md:col-span-1">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1.5">Contact Number <span className="text-red-500">*</span></label>
+              <input type="tel" required pattern="[0-9]{10}" value={formData.contact} onChange={e => setFormData({...formData, contact: e.target.value.replace(/\D/g, '').slice(0,10)})} className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:border-blue-500 outline-none font-medium" placeholder="10-digit mobile number" />
+            </div>
+
+            <div className="col-span-2 md:col-span-1">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1.5">Linked Dealer</label>
+              <select value={formData.linkedDealer} onChange={e => setFormData({...formData, linkedDealer: e.target.value})} className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:border-blue-500 outline-none font-medium">
+                <option value="">Search network...</option>
+                {MOCK_DEALERS.map(d => <option key={d.id} value={d.name}>{d.name}</option>)}
+              </select>
+            </div>
+            
+            <div className="col-span-2 md:col-span-1">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1.5">Lead Category <span className="text-red-500">*</span></label>
+              <select value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:border-blue-500 outline-none font-medium">
+                <option value="Sales Opportunity">Sales Opportunity</option>
+                <option value="Technical/Quality Assistance">Technical / Quality Support</option>
+              </select>
+            </div>
+            
+            <div className="col-span-2 md:col-span-1">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1.5">Lead Sub-Type <span className="text-red-500">*</span></label>
+              <select value={formData.subType} onChange={e => setFormData({...formData, subType: e.target.value})} className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:border-blue-500 outline-none font-medium">
+                {currentSubTypes.map(st => <option key={st} value={st}>{st}</option>)}
+              </select>
+            </div>
+
+            {/* EXPANDED RH FIELDS */}
+            {isRH && (
+              <>
+                <div className="col-span-2 pt-2 border-t border-slate-100 mt-2">
+                   <h4 className="text-xs font-bold text-blue-600 uppercase tracking-wider flex items-center gap-1.5 mb-4"><Users2 size={14}/> Regional Management Settings</h4>
+                   <div className="grid grid-cols-2 gap-5">
+                      <div>
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1.5">Regional Category <span className="text-red-500">*</span></label>
+                        <select value={formData.regionalCategory} onChange={e => setFormData({...formData, regionalCategory: e.target.value})} className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:border-blue-500 outline-none font-bold text-slate-700">
+                          <option>Project</option><option>Retail</option><option>Institutional</option><option>Government</option><option>Industrial</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1.5">Lead Temperature <span className="text-red-500">*</span></label>
+                        <select value={formData.leadTemperature} onChange={e => setFormData({...formData, leadTemperature: e.target.value})} className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:border-blue-500 outline-none font-bold text-slate-700">
+                          <option value="Cold">Cold</option><option value="Warm">Warm</option><option value="HOT">Hot</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1.5">Assignee (Resource) <span className="text-red-500">*</span></label>
+                        <select value={formData.assignee} onChange={e => setFormData({...formData, assignee: e.target.value})} className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:border-blue-500 outline-none font-bold text-slate-700">
+                          {MOCK_TEAM.map(se => <option key={se.id} value={se.name}>{se.name}</option>)}
+                          <option value="Self-Assign">Self-Assign (RH)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1.5">Estimated Value (INR)</label>
+                        <input type="number" min="0" value={formData.estimatedValue} onChange={e => setFormData({...formData, estimatedValue: e.target.value})} className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:border-blue-500 outline-none font-medium" placeholder="₹0" />
+                      </div>
+                   </div>
+                </div>
+              </>
+            )}
+
+            {!isRH && (
+              <div className="col-span-2 pt-2 border-t border-slate-100">
+                <label className="flex items-center gap-3 cursor-pointer mt-2 bg-slate-50 p-3 rounded-lg border border-slate-200">
+                  <input type="checkbox" checked={formData.assignToDealer} onChange={e => setFormData({...formData, assignToDealer: e.target.checked})} className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 cursor-pointer" />
+                  <span className="text-sm font-bold text-slate-700">Assign to Dealer (Handoff)</span>
+                </label>
+              </div>
+            )}
+          </div>
+          
+          <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 mt-2">
+            <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
+            <button type="submit" className="px-6 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 shadow-sm">Save Lead</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function CloseLeadModal({ onCancel, onSave }) {
+  const [outcome, setOutcome] = useState('');
+
+  return (
+    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center animate-in fade-in duration-200">
+      <div className="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
+        <div className="px-6 py-4 border-b border-slate-200 bg-slate-50">
+          <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">Close Lead / Ticket</h2>
+        </div>
+        <div className="p-6 space-y-4">
+          <p className="text-sm text-slate-600 font-medium">Please select the final outcome for this item before closing.</p>
+          <div>
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1.5">Outcome <span className="text-red-500">*</span></label>
+            <select value={outcome} onChange={e => setOutcome(e.target.value)} className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:border-blue-500 outline-none font-bold">
+              <option value="" disabled>Select outcome...</option>
+              <option value="Won - Order Placed">Won - Order Placed</option>
+              <option value="Lost - Chose Competitor">Lost - Chose Competitor</option>
+              <option value="Lost - Unresponsive">Lost - Unresponsive</option>
+              <option value="Resolved (Support)">Resolved (Support)</option>
+            </select>
+          </div>
+        </div>
+        <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-3">
+            <button onClick={onCancel} className="px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-200 rounded-lg">Cancel</button>
+            <button onClick={() => onSave(outcome)} disabled={!outcome} className="px-5 py-2 bg-emerald-600 text-white text-sm font-bold rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">Confirm Close</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// --- MODAL: Inject Task Modal (RH Specific) ---
+function InjectTaskModal({ entityName, onClose }) {
+  const [taskData, setTaskData] = useState({ title: '', seName: MOCK_TEAM[0].name, date: '2026-04-30', time: '10:00' });
+  
+  const handleInject = (e) => {
+    e.preventDefault();
+    alert(`Task injected into ${taskData.seName}'s daily beat plan.`);
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[60] flex items-center justify-center animate-in fade-in duration-200">
+      <div className="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+        <div className="px-6 py-4 border-b border-amber-200 bg-amber-50">
+          <h2 className="text-lg font-bold text-amber-900 flex items-center gap-2"><Zap size={20} className="text-amber-500" /> Inject Mandatory Task</h2>
+        </div>
+        <form onSubmit={handleInject} className="p-6 space-y-4">
+          <p className="text-sm text-slate-600 mb-2">Override schedule and assign a direct task for <strong className="text-slate-800">{entityName}</strong>.</p>
+          
+          <div>
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1.5">Target SE (Resource) <span className="text-red-500">*</span></label>
+            <select value={taskData.seName} onChange={e => setTaskData({...taskData, seName: e.target.value})} className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:border-amber-500 outline-none font-bold text-slate-700">
+              {MOCK_TEAM.map(se => <option key={se.id} value={se.name}>{se.name}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1.5">Task Instructions <span className="text-red-500">*</span></label>
+            <input type="text" required placeholder="e.g., Urgent Audit required today" value={taskData.title} onChange={e => setTaskData({...taskData, title: e.target.value})} className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:border-amber-500 outline-none font-medium" />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1.5">Date</label>
+              <input type="date" value={taskData.date} onChange={e => setTaskData({...taskData, date: e.target.value})} className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm outline-none font-medium" />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1.5">Time</label>
+              <input type="time" value={taskData.time} onChange={e => setTaskData({...taskData, time: e.target.value})} className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm outline-none font-medium" />
+            </div>
+          </div>
+          <div className="bg-red-50 p-3 rounded-lg border border-red-100 flex items-start gap-2 mt-4">
+             <AlertCircle size={14} className="text-red-600 mt-0.5" />
+             <p className="text-xs font-medium text-red-800">This task is flagged as <strong>Mandatory</strong> and cannot be removed from the SE's dashboard.</p>
+          </div>
+          <div className="flex justify-end gap-3 pt-4">
+            <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
+            <button type="submit" className="px-5 py-2 bg-amber-500 text-white text-sm font-bold rounded-lg hover:bg-amber-600 shadow-sm flex items-center gap-1.5"><Zap size={14}/> Inject Task</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+
+// --- COMPONENT: DealerProfileDrawer ---
+function DealerProfileDrawer({ dealer, isOpen, onClose, userView }) {
+  const [activeSubTab, setActiveSubTab] = useState('overview');
+  const [isInjectModalOpen, setIsInjectModalOpen] = useState(false);
+
+  if (!dealer) return null;
+
+  const fomoDelta = dealer.target - dealer.ytdRevenue;
+  const fomoPercentage = (dealer.ytdRevenue / dealer.target) * 100;
+  const isRH = userView === 'RH View';
+
+  return (
+    <>
+      <div className={`fixed inset-0 bg-slate-900/30 backdrop-blur-sm z-40 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={onClose} />
+      
+      {isInjectModalOpen && <InjectTaskModal entityName={dealer.name} onClose={() => setIsInjectModalOpen(false)} />}
+
+      <div className={`fixed inset-y-0 right-0 w-full md:w-[600px] bg-white shadow-2xl border-l border-slate-200 z-50 transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'} flex flex-col`}>
+        
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50 flex-shrink-0">
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-xl font-bold text-slate-900">{dealer.name}</h2>
+              {dealer.isExclusive && <Star size={16} className="text-amber-500 fill-amber-500" title="Exclusive Entity" />}
+            </div>
+            <p className="text-sm text-slate-500 flex items-center gap-1 mt-0.5 font-medium">
+              <MapPin size={14} /> {dealer.address}
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            {isRH && (
+               <button onClick={() => setIsInjectModalOpen(true)} className="flex items-center gap-1 bg-amber-100 text-amber-800 px-3 py-1.5 rounded-md text-xs font-bold hover:bg-amber-200 transition-colors shadow-sm border border-amber-200">
+                 <Zap size={14}/> Inject Task
+               </button>
+            )}
+            <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-200/50 rounded-full transition-colors">
+              <X size={24} />
+            </button>
+          </div>
+        </div>
+
+        <div className="flex px-6 border-b border-slate-200 bg-white flex-shrink-0 overflow-x-auto custom-scrollbar">
+          {['overview', 'financials', 'logistics', 'crm'].map(tab => (
+            <button key={tab} onClick={() => setActiveSubTab(tab)} className={`px-4 py-3 text-sm font-bold border-b-2 whitespace-nowrap transition-colors tracking-wide ${activeSubTab === tab ? 'border-blue-600 text-blue-700' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}>
+              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-6 bg-slate-50/50 custom-scrollbar">
+          {activeSubTab === 'overview' && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+                <h3 className="text-sm font-bold text-slate-800 mb-5 uppercase tracking-wider flex items-center gap-2"><Building size={16} className="text-blue-500"/> Basic Identity</h3>
+                <div className="grid grid-cols-2 gap-y-6 gap-x-6 text-sm">
+                  <div>
+                    <span className="text-slate-400 block mb-1 text-xs font-bold uppercase tracking-wider">Entity Type</span>
+                    <span className="font-bold text-slate-900">{dealer.type}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block mb-1 text-xs font-bold uppercase tracking-wider">Legal ID (GST)</span>
+                    <span className="font-bold text-slate-900 font-mono bg-slate-100 px-2 py-0.5 rounded">{dealer.legalId}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block mb-1 text-xs font-bold uppercase tracking-wider">Connected Distributor</span>
+                    <span className="font-bold text-slate-900">{dealer.primaryDistributor || 'None'}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block mb-1 text-xs font-bold uppercase tracking-wider">Vintage</span>
+                    <span className="font-bold text-slate-900">{dealer.liveDays} days <span className="text-slate-400 font-medium text-xs">(Since {dealer.onboardedDate})</span></span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+                <h3 className="text-sm font-bold text-slate-800 mb-5 uppercase tracking-wider flex items-center gap-2"><Users size={16} className="text-indigo-500"/> Hierarchy Mapping</h3>
+                <div className="flex items-center justify-between bg-slate-50 p-4 rounded-xl text-sm border border-slate-100 shadow-inner">
+                  <div className="text-center flex-1">
+                    <span className="text-[10px] uppercase text-slate-400 font-bold tracking-wider block mb-1">SE</span>
+                    <span className="font-bold text-slate-900">{dealer.hierarchy.se}</span>
+                  </div>
+                  <ChevronRight size={16} className="text-slate-300" />
+                  <div className="text-center flex-1">
+                    <span className="text-[10px] uppercase text-slate-400 font-bold tracking-wider block mb-1">ASM</span>
+                    <span className="font-bold text-slate-900">{dealer.hierarchy.asm}</span>
+                  </div>
+                  <ChevronRight size={16} className="text-slate-300" />
+                  <div className="text-center flex-1">
+                    <span className="text-[10px] uppercase text-slate-400 font-bold tracking-wider block mb-1">RSM</span>
+                    <span className="font-bold text-slate-900">{dealer.hierarchy.rsm}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeSubTab === 'financials' && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                  <span className="text-xs text-slate-400 font-bold uppercase tracking-wider block mb-3 flex items-center gap-1.5"><CreditCard size={14}/> Credit Score</span>
+                  <div className="flex items-end gap-2">
+                    <span className={`text-3xl font-black tracking-tight ${dealer.creditScore > 700 ? 'text-emerald-600' : dealer.creditScore > 500 ? 'text-amber-600' : 'text-red-600'}`}>
+                      {dealer.creditScore === 0 ? 'N/A' : dealer.creditScore}
+                    </span>
+                    <span className="text-xs text-slate-400 font-bold mb-1.5">/ 900</span>
+                  </div>
+                </div>
+                <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                  <span className="text-xs text-slate-400 font-bold uppercase tracking-wider block mb-3 flex items-center gap-1.5"><FileText size={14}/> Bill Lots</span>
+                  <div className="text-3xl font-black text-slate-900 tracking-tight">{dealer.billLots}</div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+                <h3 className="text-sm font-bold text-slate-800 mb-6 uppercase tracking-wider flex items-center gap-2"><TrendingUp size={16} className="text-emerald-500"/> Revenue & Targets</h3>
+                
+                <div className="mb-8">
+                  <div className="flex justify-between items-end mb-3">
+                    <div>
+                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">YTD Revenue</span>
+                      <span className="text-2xl font-black text-slate-900 tracking-tight">₹{(dealer.ytdRevenue/100000).toFixed(2)}L</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Annual Target</span>
+                      <span className="text-lg font-bold text-slate-600 tracking-tight">₹{(dealer.target/100000).toFixed(2)}L</span>
+                    </div>
+                  </div>
+                  <div className="w-full bg-slate-100 rounded-full h-3 mb-2 overflow-hidden shadow-inner">
+                    <div className={`h-3 rounded-full transition-all duration-1000 ${fomoPercentage >= 100 ? 'bg-emerald-500' : 'bg-blue-500'}`} style={{ width: `${Math.min(fomoPercentage, 100)}%` }}></div>
+                  </div>
+                  <p className="text-xs font-bold text-slate-500 text-right">
+                    {fomoPercentage >= 100 ? 'Target Achieved! 🏆' : `${fomoPercentage.toFixed(1)}% Completed`}
+                  </p>
+                </div>
+
+                <div className="pt-5 border-t border-slate-100 flex justify-between items-center">
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Lifetime Total Revenue</span>
+                  <span className="text-lg font-black text-emerald-700">₹{(dealer.totalRevenue/100000).toFixed(2)}L</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeSubTab === 'logistics' && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+                <h3 className="text-sm font-bold text-slate-800 mb-5 uppercase tracking-wider flex items-center gap-2"><Package size={16} className="text-blue-500"/> Active Orders ({dealer.activeOrders})</h3>
+                {dealer.activeOrders === 0 ? (
+                  <div className="text-center py-8 bg-slate-50 rounded-xl border border-slate-200 border-dashed">
+                    <Package size={32} className="mx-auto text-slate-300 mb-2" />
+                    <p className="text-sm text-slate-500 font-bold">0 active orders in transit.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="p-5 border border-blue-200 bg-[#F8FAFC] rounded-xl shadow-sm">
+                      <div className="flex justify-between items-center mb-5">
+                        <span className="text-[15px] font-black text-slate-900">ORD-2026-9921</span>
+                        <span className="text-[10px] uppercase tracking-wider font-bold bg-blue-100 text-blue-700 px-2.5 py-1 rounded border border-blue-200">In Transit</span>
+                      </div>
+                      <div className="relative flex items-center justify-between w-full mb-3 px-1">
+                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-slate-200 z-0 rounded-full"></div>
+                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-2/3 h-1 bg-blue-500 z-0 rounded-full"></div>
+                        
+                        <div className="z-10 bg-blue-500 w-4 h-4 rounded-full ring-4 ring-white shadow-sm"></div>
+                        <div className="z-10 bg-blue-500 w-4 h-4 rounded-full ring-4 ring-white shadow-sm"></div>
+                        <div className="z-10 bg-blue-500 w-4 h-4 rounded-full ring-4 ring-white shadow-sm"></div>
+                        <div className="z-10 bg-white border-4 border-slate-300 w-4 h-4 rounded-full ring-4 ring-white shadow-sm"></div>
+                      </div>
+                      <div className="flex justify-between text-[10px] text-slate-500 font-bold uppercase tracking-wider px-1">
+                        <span>Punched</span>
+                        <span>Warehouse</span>
+                        <span>Dispatched</span>
+                        <span>Delivered</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+                <div className="flex justify-between items-center mb-5">
+                   <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2"><Box size={16} className="text-orange-500"/> Live Inventory</h3>
+                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Last Update: {dealer.lastInventoryUpdate || 'N/A'}</span>
+                </div>
+                
+                {dealer.inventory.length === 0 ? (
+                  <div className="text-center py-8 bg-slate-50 rounded-xl border border-slate-200 border-dashed">
+                    <Box size={32} className="mx-auto text-slate-300 mb-2" />
+                    <p className="text-sm text-slate-500 font-bold">Inventory data unavailable.</p>
+                  </div>
+                ) : (
+                  <div className="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                    <table className="w-full text-sm text-left">
+                      <thead className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold uppercase text-slate-500 tracking-wider">
+                        <tr>
+                          <th className="px-5 py-3">SKU / Product</th>
+                          <th className="px-5 py-3 text-right">Quantity (Units)</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {dealer.inventory.map((inv, idx) => (
+                          <tr key={idx} className="bg-white hover:bg-slate-50 transition-colors">
+                            <td className="px-5 py-3.5 font-bold text-slate-800">{inv.sku}</td>
+                            <td className="px-5 py-3.5 text-right font-black text-slate-600">{inv.qty}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {activeSubTab === 'crm' && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+                 <h3 className="text-sm font-bold text-slate-800 mb-4 uppercase tracking-wider flex items-center gap-2"><Activity size={16} className="text-rose-500"/> Dealer Persona</h3>
+                 <div className="bg-[#FAF5EF] border border-orange-200/60 p-4 rounded-xl shadow-inner relative">
+                    <QuoteIcon className="absolute top-2 left-2 text-orange-200 opacity-50" size={40} />
+                    <p className="text-sm text-slate-700 italic font-medium relative z-10 pl-6 pr-2 py-2">
+                      "{dealer.persona}"
+                    </p>
+                 </div>
+                 
+                 <div className="mt-6 pt-6 border-t border-slate-100">
+                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1.5"><TrendingUp size={14} className="text-slate-400"/> Incentive FOMO Tracker</h4>
+                    {fomoDelta <= (dealer.target * 0.10) && fomoDelta > 0 ? (
+                      <div className="bg-red-50 text-red-800 border border-red-200 rounded-xl p-4 text-sm font-bold flex items-center justify-between shadow-sm">
+                         <span className="flex items-center gap-2"><AlertCircle size={16}/> High Conversion Potential!</span>
+                         <span className="bg-white px-2 py-1 rounded border border-red-100 shadow-sm">₹{(fomoDelta/1000).toFixed(0)}k to target</span>
+                      </div>
+                    ) : fomoDelta <= 0 ? (
+                      <div className="bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl p-4 text-sm font-bold text-center shadow-sm">
+                         🎉 Target Reached! Push for Next Tier.
+                      </div>
+                    ) : (
+                      <div className="bg-slate-50 text-slate-600 border border-slate-200 rounded-xl p-4 text-sm font-bold flex justify-between shadow-sm">
+                         <span>Current progress stable.</span>
+                         <span>₹{(fomoDelta/100000).toFixed(2)}L to target</span>
+                      </div>
+                    )}
+                 </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                  <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wider block mb-2">Sites Provided</span>
+                  <div className="text-3xl font-black text-slate-900 tracking-tight">{dealer.sitesProvided}</div>
+                  <div className="mt-3 text-xs font-bold text-slate-500"><span className="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">{dealer.leadConversion}%</span> Conv. Rate</div>
+                </div>
+                <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                  <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wider block mb-3">Linked Influencers</span>
+                  {dealer.linkedInfluencers.length > 0 ? (
+                    <div className="space-y-2">
+                      {dealer.linkedInfluencers.map((inf, idx) => (
+                        <div key={idx} className="text-sm font-bold text-slate-700 bg-slate-50 px-3 py-1.5 border border-slate-100 rounded-lg flex items-center gap-2 shadow-sm">
+                          <UserCircle size={14} className="text-slate-400"/> {inf}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-sm font-bold text-slate-400 italic">None linked</div>
+                  )}
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+                 <h3 className="text-sm font-bold text-slate-800 mb-5 uppercase tracking-wider flex items-center gap-2"><MessageSquare size={16} className="text-slate-400"/> Complaints History</h3>
+                 {dealer.complaints.length === 0 ? (
+                   <div className="text-center py-8 bg-slate-50 rounded-xl border border-slate-200 border-dashed">
+                      <MessageSquare size={32} className="mx-auto text-slate-300 mb-2" />
+                      <p className="text-sm text-slate-500 font-bold">No logged complaints.</p>
+                   </div>
+                 ) : (
+                   <div className="space-y-3">
+                     {dealer.complaints.map((comp, idx) => (
+                       <div key={idx} className="p-4 bg-white border border-slate-200 rounded-xl shadow-sm">
+                         <div className="flex justify-between items-start mb-2">
+                           <span className="text-xs font-black text-slate-500 tracking-wider uppercase">{comp.id}</span>
+                           <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded border ${comp.status === 'Resolved' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
+                             {comp.status}
+                           </span>
+                         </div>
+                         <p className="text-[15px] text-slate-800 font-bold mb-3">{comp.text}</p>
+                         <div className="text-xs font-bold text-slate-500 flex items-center gap-1.5 pt-3 border-t border-slate-100">
+                           Resolution Satisfaction: <span className={`px-2 py-0.5 rounded ${comp.satisfaction >= 80 ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>{comp.satisfaction}%</span>
+                         </div>
+                       </div>
+                     ))}
+                   </div>
+                 )}
+              </div>
+            </div>
+          )}
+          
+        </div>
+      </div>
+    </>
+  );
+}
+
+// Helper icon for styling
+function QuoteIcon(props) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path d="M14.017 21v-7.391c0-5.714 4.026-6.609 7.983-6.609v2.502c-1.428 0-3.328 1.139-3.328 4.106h3.328v7.392h-7.983zm-14.017 0v-7.391c0-5.714 4.026-6.609 7.983-6.609v2.502c-1.428 0-3.328 1.139-3.328 4.106h3.328v7.392h-7.983z"/>
+    </svg>
+  );
+}
+
+// --- COMPONENT: InfluencerProfileDrawer ---
+function InfluencerProfileDrawer({ influencer, isOpen, onClose, userView }) {
+  const [isInjectModalOpen, setIsInjectModalOpen] = useState(false);
+  
+  if (!influencer) return null;
+  
+  const status = calculateInfluencerStatus(influencer.lastActivityDate);
+  const isRH = userView === 'RH View';
+
+  return (
+    <>
+      <div className={`fixed inset-0 bg-slate-900/30 backdrop-blur-sm z-40 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={onClose} />
+      
+      {isInjectModalOpen && <InjectTaskModal entityName={influencer.name} onClose={() => setIsInjectModalOpen(false)} />}
+
+      <div className={`fixed inset-y-0 right-0 w-full md:w-[450px] bg-white shadow-2xl border-l border-slate-200 z-50 transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'} flex flex-col`}>
+        <div className="px-6 py-8 border-b border-slate-200 bg-slate-50 flex-shrink-0 relative">
+          <div className="absolute top-4 right-4 flex gap-2">
+            {isRH && (
+              <button onClick={() => setIsInjectModalOpen(true)} className="flex items-center gap-1 bg-amber-100 text-amber-800 px-3 py-1.5 rounded-md text-xs font-bold hover:bg-amber-200 transition-colors shadow-sm border border-amber-200">
+                <Zap size={14}/> Inject Task
+              </button>
+            )}
+            <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-200/50 rounded-full transition-colors"><X size={20} /></button>
+          </div>
+
+          <div className="flex flex-col items-center text-center mt-4">
+            <div className="w-24 h-24 rounded-full bg-white flex items-center justify-center text-slate-700 text-3xl font-black mb-4 shadow-sm border border-slate-200 tracking-tighter">
+              {getInitials(influencer.name)}
+            </div>
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">{influencer.name}</h2>
+            <div className="flex items-center justify-center gap-2 mb-4">
+               <span className={`text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-sm border ${getCategoryColor(influencer.category)}`}>
+                 {influencer.category}
+               </span>
+               <span className={`text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-sm border ${status === 'Active' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
+                 {status}
+               </span>
+            </div>
+            <div className="flex items-center justify-center gap-4 text-xs font-bold text-slate-500 bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm">
+              <span className="flex items-center gap-1.5"><Phone size={14} className="text-slate-400"/> {influencer.phoneNumber}</span>
+              <div className="w-px h-4 bg-slate-300"></div>
+              <span className="flex items-center gap-1.5"><Hash size={14} className="text-slate-400"/> {influencer.ccrlNumber}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex-1 overflow-y-auto p-6 bg-slate-50/50 custom-scrollbar space-y-6">
+           <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+            <h3 className="text-sm font-bold text-slate-800 mb-5 uppercase tracking-wider flex items-center gap-2"><Briefcase size={16} className="text-blue-500"/> Mapping Details</h3>
+            <div className="space-y-5">
+              <div>
+                <span className="text-slate-400 block mb-2 text-[11px] font-bold uppercase tracking-wider">Linked Dealer</span>
+                <div className="flex items-center justify-between bg-[#F8FAFC] p-4 rounded-xl border border-slate-200 shadow-sm">
+                  <span className="font-bold text-slate-900 text-[15px]">{influencer.linkedDealer}</span>
+                  <span className="text-[10px] text-slate-500 font-mono font-bold bg-white px-2 py-1 rounded border border-slate-200">{influencer.linkedDealerId}</span>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-100">
+                <div>
+                  <span className="text-slate-400 block mb-1 text-[11px] font-bold uppercase tracking-wider">Mapped SE</span>
+                  <span className="font-bold text-slate-800">{influencer.mappedSE}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block mb-1 text-[11px] font-bold uppercase tracking-wider">Last Activity</span>
+                  <span className="font-bold text-slate-800 flex items-center gap-1.5">
+                    <CalendarCheck size={14} className="text-slate-400"/> 
+                    {influencer.lastActivityDate ? influencer.lastActivityDate : 'N/A'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+            <h3 className="text-sm font-bold text-slate-800 mb-5 uppercase tracking-wider flex items-center gap-2"><TrendingUp size={16} className="text-emerald-500"/> Performance Metrics</h3>
+            
+            <div className="grid grid-cols-2 gap-4 mb-5">
+              <div className="bg-[#F8FAFC] rounded-xl border border-slate-200 p-4 shadow-sm">
+                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mb-1">Total Sites Given</span>
+                <div className="text-3xl font-black tracking-tight text-slate-900">{influencer.totalSitesGiven}</div>
+              </div>
+              <div className="bg-[#F8FAFC] rounded-xl border border-slate-200 p-4 shadow-sm">
+                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mb-1">Conversion Rate</span>
+                <div className="text-3xl font-black tracking-tight text-emerald-600">{influencer.totalSitesGiven > 0 ? `${influencer.conversionRate}%` : '0%'}</div>
+              </div>
+            </div>
+
+            <div className="bg-emerald-50/80 rounded-xl border border-emerald-200 p-5 mb-5 shadow-sm">
+              <span className="text-[11px] text-emerald-800 font-bold uppercase tracking-wider block mb-2">Lifetime Revenue Generated</span>
+              <div className="text-2xl font-black tracking-tight text-emerald-900">
+                {influencer.totalSitesGiven > 0 ? `₹${(influencer.revenue/100000).toFixed(2)}L` : '₹0'}
+              </div>
+            </div>
+
+            <div className="pt-5 border-t border-slate-100">
+              <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-1.5"><Award size={14}/> Reward / Payout Status</h4>
+              {influencer.rewardsAccrued === 0 && influencer.rewardsRedeemed === 0 ? (
+                <div className="text-sm text-slate-500 font-bold italic bg-slate-50 p-4 rounded-xl border border-slate-200 border-dashed text-center">
+                  0 Points or N/A
+                </div>
+              ) : (
+                <div className="flex justify-between items-center text-sm bg-[#F8FAFC] p-4 rounded-xl border border-slate-200 shadow-sm">
+                  <div>
+                    <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider mb-1">Accrued</span>
+                    <span className="font-black text-slate-800 text-lg">{influencer.rewardsAccrued.toLocaleString()} Pts</span>
+                  </div>
+                  <div className="h-8 w-px bg-slate-300 mx-4"></div>
+                  <div className="text-right">
+                    <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider mb-1">Redeemed</span>
+                    <span className="font-black text-blue-600 text-lg">{influencer.rewardsRedeemed.toLocaleString()} Pts</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// --- COMPONENT: NetworkDirectoryView ---
+function NetworkDirectoryView({ userView }) {
+  const [activeTab, setActiveTab] = useState('dealers'); 
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  
+  // RH Filters
+  const [filterRegion, setFilterRegion] = useState('All Regions');
+  const [filterSE, setFilterSE] = useState('All SEs');
+  
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedDealer, setSelectedDealer] = useState(null); 
+  const [selectedInfluencer, setSelectedInfluencer] = useState(null);
+
+  const isRH = userView === 'RH View';
+
+  useEffect(() => {
+    const handler = setTimeout(() => { setDebouncedSearchTerm(searchTerm); }, 300);
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
+
+  const handleTabSwitch = (tab) => {
+    if (tab !== activeTab) {
+      setIsLoading(true); setActiveTab(tab); setSearchTerm('');
+      setTimeout(() => setIsLoading(false), 600);
+    }
+  };
+  
+  const currentData = activeTab === 'dealers' ? MOCK_DEALERS : MOCK_INFLUENCERS;
+  
+  const filteredData = currentData.filter(item => {
+    const matchesSearch = item.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) || 
+                          item.city.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+                          (item.id && item.id.toString().includes(debouncedSearchTerm));
+    
+    // Assignment Filters
+    let mappedSE = activeTab === 'dealers' && item.hierarchy ? item.hierarchy.se : item.mappedSE;
+    const matchesSE = filterSE === 'All SEs' || mappedSE === filterSE;
+    
+    // Region Filter (RH specific)
+    const matchesRegion = !isRH || filterRegion === 'All Regions' || item.region === filterRegion;
+
+    return matchesSearch && matchesSE && matchesRegion;
+  });
+
+  return (
+    <div className="space-y-6 max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col h-full relative">
+      <DealerProfileDrawer dealer={selectedDealer} isOpen={!!selectedDealer} onClose={() => setSelectedDealer(null)} userView={userView} />
+      <InfluencerProfileDrawer influencer={selectedInfluencer} isOpen={!!selectedInfluencer} onClose={() => setSelectedInfluencer(null)} userView={userView} />
+
+      <div className="flex justify-between items-center flex-shrink-0">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-800 tracking-tight">Network Directory</h1>
+          <p className="text-slate-500 font-medium mt-1">Manage Dealers, Distributors, and Influencers.</p>
+        </div>
+        <div className="flex bg-slate-300/40 p-1.5 rounded-lg shadow-inner">
+          <button onClick={() => handleTabSwitch('dealers')} className={`px-5 py-2 text-sm font-bold rounded-md transition-all ${activeTab === 'dealers' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-800'}`}>Dealers & Distributors</button>
+          <button onClick={() => handleTabSwitch('influencers')} className={`px-5 py-2 text-sm font-bold rounded-md transition-all ${activeTab === 'influencers' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-800'}`}>Influencers</button>
+        </div>
+      </div>
+
+      <div className="bg-[#F8FAFC] p-5 rounded-2xl shadow-sm border border-slate-300/60 flex-1 flex flex-col">
+        <div className="flex flex-wrap gap-4 mb-6 flex-shrink-0 items-center">
+          <div className="relative max-w-md w-full">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <input type="text" placeholder={`Search by name, ID, or city...`} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 shadow-sm rounded-xl text-sm font-medium focus:border-blue-500 outline-none text-slate-800 transition-colors" />
+          </div>
+          
+          {isRH && (
+            <div className="flex gap-4">
+               <div className="relative">
+                 <select 
+                   value={filterRegion} 
+                   onChange={(e) => setFilterRegion(e.target.value)}
+                   className="pl-4 pr-10 py-3 bg-white border border-slate-200 shadow-sm rounded-xl text-sm font-bold text-slate-700 outline-none appearance-none focus:border-blue-500"
+                 >
+                   <option value="All Regions">All Regions (Jurisdiction)</option>
+                   <option value="Delhi NCR">Delhi NCR</option>
+                   <option value="Haryana Zone">Haryana Zone</option>
+                 </select>
+                 <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
+               </div>
+               
+               <div className="relative">
+                 <select 
+                   value={filterSE} 
+                   onChange={(e) => setFilterSE(e.target.value)}
+                   className="pl-4 pr-10 py-3 bg-white border border-slate-200 shadow-sm rounded-xl text-sm font-bold text-slate-700 outline-none appearance-none focus:border-blue-500"
+                 >
+                   <option value="All SEs">All SEs (Team)</option>
+                   {MOCK_TEAM.map(se => <option key={se.id} value={se.name}>{se.name}</option>)}
+                 </select>
+                 <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
+               </div>
+            </div>
+          )}
+        </div>
+
+        <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar relative">
+          {isLoading && <div className="absolute inset-0 bg-[#F8FAFC]/90 backdrop-blur-sm z-10 flex flex-col items-center justify-center rounded-xl"><Loader2 className="animate-spin text-blue-600 mb-4" size={40} /></div>}
+          {!isLoading && filteredData.length === 0 && (
+            <div className="flex flex-col items-center justify-center h-full text-center py-20">
+              <div className="w-20 h-20 bg-slate-200 rounded-full flex items-center justify-center mb-4"><Search size={32} className="text-slate-400" /></div>
+              <h3 className="text-lg font-bold text-slate-800 mb-2">No {activeTab === 'dealers' ? 'Dealers & Distributors' : 'Influencers'} mapped to your territory.</h3>
+              <p className="text-sm text-slate-500 font-medium">Try adjusting your filters or check for typos.</p>
+            </div>
+          )}
+          
+          {/* DEALER CARDS - GLANCE VIEW */}
+          {!isLoading && activeTab === 'dealers' && filteredData.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+              {filteredData.map(dealer => {
+                const fomoAlert = dealer.target - dealer.ytdRevenue <= (dealer.target * 0.10) && (dealer.target - dealer.ytdRevenue) > 0;
+                return (
+                  <div key={dealer.id} onClick={() => setSelectedDealer(dealer)} className="border border-slate-200 rounded-2xl p-6 hover:border-blue-400 hover:shadow-md transition-all cursor-pointer bg-white group flex flex-col h-full shadow-sm relative">
+                    {/* RH Assignment Badge */}
+                    {isRH && (
+                       <span className="absolute -top-3 -right-2 bg-indigo-100 text-indigo-800 text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full border border-indigo-200 shadow-sm flex items-center gap-1.5">
+                          <UserCircle size={12}/> {dealer.hierarchy.se}
+                       </span>
+                    )}
+
+                    <div className="flex justify-between items-start mb-6 mt-1">
+                      <div>
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <h3 className="font-bold text-lg text-slate-900 group-hover:text-blue-700 transition-colors tracking-tight">{dealer.name}</h3>
+                          {dealer.isExclusive && <Star size={16} className="text-amber-500 fill-amber-500" title="Exclusive Entity" />}
+                        </div>
+                        <p className="text-xs text-slate-500 flex items-center gap-1.5 font-bold">
+                          <MapPin size={12} className="text-slate-400"/> {dealer.city}
+                        </p>
+                      </div>
+                      <div className="flex flex-col items-end gap-2">
+                        <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md border ${dealer.isAuthorized ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
+                          {dealer.isAuthorized ? 'Authorized' : 'Prospect'}
+                        </span>
+                        <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md border shadow-sm ${
+                          dealer.tier === 'Top' ? 'bg-purple-50 text-purple-700 border-purple-200' : 
+                          dealer.tier === 'Active' ? 'bg-blue-50 text-blue-700 border-blue-200' : 
+                          dealer.tier === 'Slow' ? 'bg-orange-50 text-orange-700 border-orange-200' : 'bg-red-50 text-red-700 border-red-200'
+                        }`}>
+                          {dealer.tier}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="mt-auto pt-5 border-t border-slate-100 grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-[10px] uppercase text-slate-400 font-bold tracking-wider mb-1.5">YTD Revenue</p>
+                        <p className="text-[16px] font-black text-slate-800 tracking-tight">₹{(dealer.ytdRevenue/100000).toFixed(1)}L</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase text-slate-400 font-bold tracking-wider mb-1.5">Active Orders</p>
+                        <div className="flex items-center gap-1.5 text-[16px] font-black text-slate-800 tracking-tight">
+                          <Package size={16} className="text-slate-400"/> {dealer.activeOrders}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {fomoAlert && (
+                      <div className="mt-5 bg-red-50 rounded-xl p-3 flex items-center justify-center border border-red-200 shadow-sm">
+                        <p className="text-xs font-bold text-red-700 tracking-wide">
+                          ₹{((dealer.target - dealer.ytdRevenue)/1000).toFixed(0)}k to {dealer.tier === 'Active' ? 'Top' : 'Next'} Tier!
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* INFLUENCER CARDS - GLANCE VIEW */}
+          {!isLoading && activeTab === 'influencers' && filteredData.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+               {filteredData.map(influencer => {
+                 const status = calculateInfluencerStatus(influencer.lastActivityDate);
+                 return (
+                   <div key={influencer.id} onClick={() => setSelectedInfluencer(influencer)} className="border border-slate-200 rounded-2xl p-6 hover:border-blue-400 hover:shadow-md transition-all cursor-pointer bg-white group flex flex-col h-full shadow-sm relative">
+                      {/* RH Assignment Badge */}
+                      {isRH && (
+                         <span className="absolute -top-3 -right-2 bg-indigo-100 text-indigo-800 text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full border border-indigo-200 shadow-sm flex items-center gap-1.5">
+                            <UserCircle size={12}/> {influencer.mappedSE}
+                         </span>
+                      )}
+                      
+                      <div className="flex justify-between items-start mb-5 mt-1">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-black shadow-inner border border-slate-200 text-lg tracking-tighter">
+                             {getInitials(influencer.name)}
+                          </div>
+                          <div>
+                            <h3 className="font-bold text-lg text-slate-900 group-hover:text-blue-700 transition-colors tracking-tight">{influencer.name}</h3>
+                            <p className="text-xs text-slate-500 flex items-center gap-1.5 mt-1 font-bold">
+                              <MapPin size={12} className="text-slate-400"/> {influencer.city}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 mb-5">
+                        <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md border shadow-sm ${getCategoryColor(influencer.category)}`}>
+                          {influencer.category}
+                        </span>
+                        <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md border shadow-sm ${status === 'Active' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
+                          {status}
+                        </span>
+                      </div>
+
+                      <div className="mb-5 bg-[#F8FAFC] p-3 rounded-xl border border-slate-200 shadow-sm">
+                        <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1.5">Linked Dealer</p>
+                        <p className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                          <Briefcase size={14} className="text-slate-400" />
+                          {influencer.linkedDealer}
+                        </p>
+                      </div>
+
+                      <div className="mt-auto pt-5 border-t border-slate-100 grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-[10px] uppercase text-slate-400 font-bold tracking-wider mb-1.5">Conversion</p>
+                          <p className="text-[16px] font-black tracking-tight text-slate-800">{influencer.totalSitesGiven > 0 ? `${influencer.conversionRate}%` : '0%'}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] uppercase text-slate-400 font-bold tracking-wider mb-1.5">Revenue Gen.</p>
+                          <p className="text-[16px] font-black tracking-tight text-emerald-700">{influencer.totalSitesGiven > 0 ? `₹${(influencer.revenue/1000).toFixed(0)}k` : '₹0'}</p>
+                        </div>
+                      </div>
+                   </div>
+                 );
+               })}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// --- COMPONENT: OrderTrackingView ---
+function OrderTrackingView() {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [selectedOrder, setSelectedOrder] = useState(null);
+
+  const filteredOrders = MOCK_ORDERS.filter(order => {
+    const matchesSearch = order.id.toLowerCase().includes(searchTerm.toLowerCase()) || order.entityName.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesSearch && (statusFilter === 'All' || order.status === statusFilter);
+  });
+
+  return (
+    <div className="space-y-6 max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 h-full flex flex-col">
+      <div className="flex justify-between items-end flex-shrink-0">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-800 tracking-tight">Track Orders</h1>
+          <p className="text-slate-500 font-medium mt-1">Monitor the real-time fulfillment status of all territory orders.</p>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 flex-1 flex flex-col relative overflow-hidden">
+        <OrderDetailsDrawer order={selectedOrder} isOpen={!!selectedOrder} onClose={() => setSelectedOrder(null)} />
+        
+        <div className="p-4 border-b border-slate-200 flex gap-4 justify-between items-center bg-slate-50/50 flex-shrink-0">
+          <div className="relative max-w-sm w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <input type="text" placeholder="Search by Order ID..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2 border rounded-lg text-sm outline-none" />
+          </div>
+        </div>
+        
+        <div className="flex-1 overflow-auto">
+           <table className="w-full text-sm text-left">
+              <thead className="bg-slate-50 border-b border-slate-200 text-xs uppercase text-slate-500 sticky top-0 z-10 shadow-sm">
+                <tr>
+                  <th className="px-6 py-4 font-semibold">Order ID</th>
+                  <th className="px-6 py-4 font-semibold">Entity Name</th>
+                  <th className="px-6 py-4 font-semibold">Current Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filteredOrders.map((order) => (
+                  <tr key={order.id} onClick={() => setSelectedOrder(order)} className="bg-white hover:bg-slate-50/80 cursor-pointer transition-colors">
+                    <td className="px-6 py-4 font-bold text-slate-800">{order.id}</td>
+                    <td className="px-6 py-4 font-medium text-slate-700">{order.entityName}</td>
+                    <td className="px-6 py-4 font-medium text-slate-600">
+                      <div className="flex items-center gap-2">
+                        <span>{order.status}</span>
+                        {order.isDelayed && (
+                          <span className="flex items-center gap-1 text-[10px] font-bold uppercase text-red-600 bg-red-50 border border-red-100 px-2 py-0.5 rounded-full">
+                            <AlertTriangle size={10} /> Delayed
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// --- COMPONENT: OrderDetailsDrawer ---
+function OrderDetailsDrawer({ order, isOpen, onClose }) {
+  if (!order) return null;
+  return (
+    <>
+      <div className={`fixed inset-0 bg-slate-900/30 backdrop-blur-sm z-40 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={onClose} />
+      <div className={`absolute inset-y-0 right-0 w-full md:w-[500px] bg-white shadow-2xl border-l border-slate-200 z-50 transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'} flex flex-col`}>
+        <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+          <h2 className="text-lg font-bold text-slate-900">{order.id}</h2>
+          <button onClick={onClose} className="p-2"><X size={24} /></button>
+        </div>
+        <div className="p-6">
+          <p className="font-bold mb-4 text-slate-800">Total Value: ₹{order.value.toLocaleString()}</p>
+          <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+            <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4 flex items-center gap-2"><Package size={16} /> Line Items</h3>
+            <ul className="space-y-3">
+              {order.items.map((item, idx) => (
+                <li key={idx} className="flex justify-between items-center bg-white p-3 border border-slate-100 rounded-lg">
+                  <div>
+                    <p className="text-sm font-bold text-slate-800">{item.name}</p>
+                    <p className="text-[10px] text-slate-500 font-mono mt-0.5">{item.sku}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-slate-600">{item.qty} units</p>
+                    <p className="text-xs text-slate-400">@ ₹{item.price}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// --- COMPONENT: OrderWizardView ---
+function OrderWizardView() {
+  const [step, setStep] = useState(1);
+  const [selectedEntityId, setSelectedEntityId] = useState('');
+  const [shippingType, setShippingType] = useState('default');
+  const [customAddress, setCustomAddress] = useState('');
+  const [customContact, setCustomContact] = useState('');
+  const [orderItems, setOrderItems] = useState([{ sku: '', quantity: 1 }]);
+  const [toastMessage, setToastMessage] = useState(null);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const selectedEntity = MOCK_DEALERS.find(d => d.id === parseInt(selectedEntityId));
+
+  useEffect(() => {
+    if (step === 1 && selectedEntity) {
+      if (selectedEntity.type === 'Dealer' && (!selectedEntity.primaryDistributor || selectedEntity.primaryDistributor === 'None' || selectedEntity.primaryDistributor === 'Direct')) {
+        setToastMessage("No primary distributor mapped. ORC will not be applied automatically.");
+      } else {
+        setToastMessage(null);
+      }
+    } else {
+      setToastMessage(null);
+    }
+  }, [selectedEntity, step]);
+
+  const handleNext = () => {
+    if (step === 1 && !selectedEntity) return;
+    if (step === 3 && shippingType === 'custom' && (!customAddress || !customContact)) return;
+    if (step === 4) {
+      const validItems = orderItems.filter(item => item.sku !== '' && item.quantity > 0);
+      if (validItems.length === 0) {
+        alert("Please add at least one valid item to the order.");
+        return;
+      }
+      setIsSubmitted(true);
+      return;
+    }
+    setStep(s => s + 1);
+  };
+
+  const handleBack = () => {
+    setStep(s => Math.max(1, s - 1));
+  };
+
+  const handleItemChange = (index, field, value) => {
+    const newItems = [...orderItems];
+    newItems[index][field] = value;
+    setOrderItems(newItems);
+  };
+
+  const addItemRow = () => setOrderItems([...orderItems, { sku: '', quantity: 1 }]);
+  
+  const removeItemRow = (index) => {
+    if (orderItems.length === 1) return;
+    setOrderItems(orderItems.filter((_, idx) => idx !== index));
+  };
+
+  const calculateTotal = () => {
+    return orderItems.reduce((total, item) => {
+      const product = MOCK_PRODUCTS.find(p => p.sku === item.sku);
+      if (product && item.quantity > 0) return total + (product.price * item.quantity);
+      return total;
+    }, 0);
+  };
+
+  if (isSubmitted) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full animate-in fade-in zoom-in duration-500">
+        <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mb-6">
+          <CheckCircle size={40} className="text-emerald-600" />
+        </div>
+        <h2 className="text-2xl font-bold text-slate-900 mb-2">Order Submitted Successfully!</h2>
+        <p className="text-slate-500 mb-8 text-center max-w-md">
+          Order ID <span className="font-mono font-bold text-slate-700">ORD-{Math.floor(1000 + Math.random() * 9000)}</span> has been generated for {selectedEntity?.name}. It is now pending warehouse processing.
+        </p>
+        <div className="flex gap-4">
+          <button onClick={() => { setStep(1); setSelectedEntityId(''); setShippingType('default'); setOrderItems([{ sku: '', quantity: 1 }]); setIsSubmitted(false); }} className="px-6 py-2.5 bg-white border border-slate-300 rounded-lg text-slate-700 font-medium hover:bg-slate-50 transition-colors">
+            Punch Another Order
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 h-full flex flex-col">
+      <div className="flex justify-between items-end flex-shrink-0">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-800 tracking-tight">Place Orders</h1>
+          <p className="text-slate-500 font-medium mt-1">Punch new orders directly into the fulfillment pipeline.</p>
+        </div>
+      </div>
+
+      <div className="flex-1 flex flex-col bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden relative">
+        <div className="pt-8 px-12 relative flex justify-between items-center w-full after:content-[''] after:absolute after:top-[48px] after:left-12 after:right-12 after:h-0.5 after:bg-slate-200 after:-z-10">
+          {['Select Entity', 'Billing Details', 'Shipping Info', 'Order Items'].map((label, idx) => {
+            const stepNum = idx + 1;
+            const isActive = step === stepNum;
+            const isCompleted = step > stepNum;
+            return (
+              <div key={stepNum} className="flex flex-col items-center bg-white px-2 z-10">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-colors border-2 ${isActive ? 'bg-blue-600 border-blue-600 text-white' : isCompleted ? 'bg-white border-blue-600 text-blue-600' : 'bg-white border-slate-300 text-slate-400'}`}>
+                  {isCompleted ? <CheckCircle size={16} /> : stepNum}
+                </div>
+                <span className={`text-xs font-medium mt-2 absolute top-[64px] whitespace-nowrap ${isActive ? 'text-blue-700' : 'text-slate-500'}`}>
+                  {label}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+
+        {toastMessage && (
+          <div className="absolute top-[100px] left-0 right-0 bg-amber-50 border-y border-amber-200 px-6 py-3 flex items-center gap-3 animate-in slide-in-from-top-2">
+            <AlertCircle className="text-amber-600" size={18} />
+            <p className="text-sm text-amber-800 font-medium">{toastMessage}</p>
+          </div>
+        )}
+
+        <div className={`flex-1 p-8 overflow-y-auto mt-12 ${toastMessage ? 'pt-16' : ''}`}>
+          {step === 1 && (
+            <div className="max-w-xl mx-auto space-y-6">
+              <div className="text-center mb-8">
+                <h2 className="text-xl font-bold text-slate-800">Who is placing this order?</h2>
+                <p className="text-sm text-slate-500">Select an entity from your assigned territory.</p>
+              </div>
+              <div className="space-y-3">
+                <label className="text-sm font-semibold text-slate-700 uppercase tracking-wider">Search Network</label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <select value={selectedEntityId} onChange={(e) => setSelectedEntityId(e.target.value)} className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all outline-none appearance-none font-medium">
+                    <option value="" disabled>Select Dealer or Distributor...</option>
+                    {MOCK_DEALERS.map(dealer => (
+                      <option key={dealer.id} value={dealer.id}>{dealer.name} ({dealer.type})</option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={18} />
+                </div>
+              </div>
+              {selectedEntity && (
+                <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 mt-6 animate-in fade-in">
+                  <div className="flex items-center gap-3 mb-2">
+                     <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600"><Building size={20} /></div>
+                     <div><h3 className="font-bold text-slate-900">{selectedEntity.name}</h3><p className="text-xs text-blue-700 font-medium uppercase tracking-wider">{selectedEntity.type}</p></div>
+                  </div>
+                  {selectedEntity.type === 'Dealer' && selectedEntity.primaryDistributor && (
+                    <div className="mt-3 pt-3 border-t border-blue-200/50 flex items-center gap-2 text-sm text-slate-600"><span className="font-semibold text-slate-800">Mapped Distributor:</span> {selectedEntity.primaryDistributor}</div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {step === 2 && selectedEntity && (
+            <div className="max-w-xl mx-auto space-y-6">
+              <div className="text-center mb-8"><h2 className="text-xl font-bold text-slate-800">Confirm Billing Profile</h2><p className="text-sm text-slate-500">Ensure these system records are correct before proceeding.</p></div>
+              <div className="bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+                <div className="px-6 py-4 bg-white border-b border-slate-200 flex items-center gap-3"><FileText className="text-slate-400" size={24} /><div><h3 className="font-bold text-slate-900 text-lg">{selectedEntity.name}</h3><p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Registered Entity Name</p></div></div>
+                <div className="p-6 space-y-5">
+                  <div><label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Legal ID / GSTIN</label><div className="font-mono text-slate-900 bg-white px-3 py-2 border border-slate-200 rounded-lg inline-block">{selectedEntity.legalId}</div></div>
+                  <div><label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Registered Billing Address</label><p className="text-slate-800 bg-white px-4 py-3 border border-slate-200 rounded-lg flex items-start gap-2"><MapPin className="text-slate-400 mt-0.5 flex-shrink-0" size={16} />{selectedEntity.address}, {selectedEntity.city}</p></div>
+                  {selectedEntity.type === 'Dealer' && (
+                    <div className="bg-blue-50 text-blue-800 p-4 rounded-lg text-sm border border-blue-100 flex gap-2 items-start"><AlertCircle className="flex-shrink-0 mt-0.5 text-blue-600" size={16} /><p>This order will be processed with <strong>Over Right Credit (ORC)</strong> applied through {selectedEntity.primaryDistributor || "an unmapped distributor"}.</p></div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {step === 3 && (
+            <div className="max-w-xl mx-auto space-y-6">
+              <div className="text-center mb-8"><h2 className="text-xl font-bold text-slate-800">Shipping Destination</h2><p className="text-sm text-slate-500">Where should the inventory be delivered?</p></div>
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <label className={`relative p-4 border rounded-xl cursor-pointer transition-all ${shippingType === 'default' ? 'border-blue-600 bg-blue-50/30 ring-1 ring-blue-600' : 'border-slate-200 bg-white hover:border-slate-300'}`}>
+                  <input type="radio" className="sr-only" checked={shippingType === 'default'} onChange={() => setShippingType('default')} />
+                  <div className="flex items-center gap-3 mb-2"><div className={`w-4 h-4 rounded-full border flex items-center justify-center ${shippingType === 'default' ? 'border-blue-600' : 'border-slate-300'}`}>{shippingType === 'default' && <div className="w-2 h-2 rounded-full bg-blue-600"></div>}</div><span className="font-semibold text-slate-900">Default Address</span></div>
+                  <p className="text-xs text-slate-500 ml-7 line-clamp-2">{selectedEntity?.address}</p>
+                </label>
+                <label className={`relative p-4 border rounded-xl cursor-pointer transition-all ${shippingType === 'custom' ? 'border-blue-600 bg-blue-50/30 ring-1 ring-blue-600' : 'border-slate-200 bg-white hover:border-slate-300'}`}>
+                  <input type="radio" className="sr-only" checked={shippingType === 'custom'} onChange={() => setShippingType('custom')} />
+                  <div className="flex items-center gap-3 mb-2"><div className={`w-4 h-4 rounded-full border flex items-center justify-center ${shippingType === 'custom' ? 'border-blue-600' : 'border-slate-300'}`}>{shippingType === 'custom' && <div className="w-2 h-2 rounded-full bg-blue-600"></div>}</div><span className="font-semibold text-slate-900">Custom Address</span></div>
+                  <p className="text-xs text-slate-500 ml-7">Deliver to a site or alternative location</p>
+                </label>
+              </div>
+              {shippingType === 'custom' && (
+                <div className="space-y-4 animate-in slide-in-from-top-2 fade-in bg-slate-50 p-6 rounded-xl border border-slate-200">
+                  <div><label className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-1">Delivery Location <span className="text-red-500">*</span></label><textarea value={customAddress} onChange={(e) => setCustomAddress(e.target.value)} placeholder="Enter full shipping address with landmarks..." className="w-full p-3 bg-white border border-slate-300 rounded-lg text-sm focus:border-blue-500 outline-none resize-none h-24" /></div>
+                  <div><label className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-1">Contact Person & Phone <span className="text-red-500">*</span></label><input type="text" value={customContact} onChange={(e) => setCustomContact(e.target.value)} placeholder="e.g. Site Manager Rahul - 9876543210" className="w-full p-3 bg-white border border-slate-300 rounded-lg text-sm focus:border-blue-500 outline-none" /></div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {step === 4 && (
+            <div className="max-w-3xl mx-auto space-y-6">
+              <div className="text-center mb-8"><h2 className="text-xl font-bold text-slate-800">Add Order Items</h2><p className="text-sm text-slate-500">Select SKUs and quantities. Inventory limits are bypassed.</p></div>
+              <div className="bg-slate-50 rounded-xl border border-slate-200 p-4">
+                <div className="grid grid-cols-12 gap-4 mb-2 px-2"><div className="col-span-8 text-xs font-bold text-slate-500 uppercase tracking-wider">Product / SKU</div><div className="col-span-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Quantity</div><div className="col-span-1"></div></div>
+                {orderItems.map((item, index) => (
+                  <div key={index} className="grid grid-cols-12 gap-4 mb-3 items-center bg-white p-2 rounded-lg border border-slate-200 shadow-sm">
+                    <div className="col-span-8">
+                      <select value={item.sku} onChange={(e) => handleItemChange(index, 'sku', e.target.value)} className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-md text-sm text-slate-800 outline-none focus:border-blue-500">
+                        <option value="" disabled>Select Product...</option>
+                        {MOCK_PRODUCTS.map(prod => (<option key={prod.sku} value={prod.sku}>{prod.name} (₹{prod.price})</option>))}
+                      </select>
+                    </div>
+                    <div className="col-span-3">
+                      <input type="number" min="1" value={item.quantity} onChange={(e) => handleItemChange(index, 'quantity', parseInt(e.target.value) || 0)} className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-md text-sm text-slate-800 outline-none focus:border-blue-500" />
+                    </div>
+                    <div className="col-span-1 flex justify-center"><button onClick={() => removeItemRow(index)} disabled={orderItems.length === 1} className={`p-2 rounded-md transition-colors ${orderItems.length === 1 ? 'text-slate-300' : 'text-red-500 hover:bg-red-50'}`}><Trash2 size={18} /></button></div>
+                  </div>
+                ))}
+                <button onClick={addItemRow} className="mt-2 text-sm font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1.5 px-2 py-1 rounded hover:bg-blue-50 transition-colors"><Plus size={16} /> Add Another Line Item</button>
+              </div>
+              <div className="flex justify-end pt-4"><div className="bg-white border border-slate-200 rounded-xl p-5 w-64 shadow-sm"><div className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Estimated Total</div><div className="text-2xl font-bold text-slate-900">₹{calculateTotal().toLocaleString()}</div></div></div>
+            </div>
+          )}
+        </div>
+
+        <div className="px-8 py-4 bg-slate-50 border-t border-slate-200 flex justify-between items-center flex-shrink-0">
+          <button onClick={handleBack} disabled={step === 1} className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors ${step === 1 ? 'text-slate-400 opacity-50 cursor-not-allowed' : 'text-slate-700 bg-white border border-slate-300 hover:bg-slate-100'}`}><ArrowLeft size={16} /> Back</button>
+          <button onClick={handleNext} disabled={(step === 1 && !selectedEntityId) || (step === 3 && shippingType === 'custom' && (!customAddress || !customContact))} className="flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold bg-slate-900 text-white hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">{step === 4 ? (<>Submit Order <CheckCircle size={16} /></>) : (<>Continue <ArrowRight size={16} /></>)}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
